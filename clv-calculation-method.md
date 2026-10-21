@@ -4,7 +4,7 @@ Technical Deep Dive · Customer Lifetime Value (CLV) · bp
 
 A step-by-step walkthrough of the CLV method: defining churn, building the customer record, training survival models, and turning survival probabilities into a discounted lifetime value.
 
-Agnivesh Das · Senior Data Analytics Engineer · bp
+Agnivesh Das · Senior Data Analyst · bp
 
 > **Note:** this describes the method and model logic. All dates, thresholds, parameters, code, customers and figures are illustrative, not production values or production code.
 

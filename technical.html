@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to Calculate Customer Lifetime Value: From Linked Transactions to a 5-Year Value per Customer · Agnivesh Das</title>
+<meta name="description" content="A step-by-step walkthrough of the CLV method: defining churn, building the customer record, training survival models, and turning survival probabilities into a discounted lifetime value.">
+<meta property="og:title" content="How to Calculate Customer Lifetime Value: From Linked Transactions to a 5-Year Value per Customer · Agnivesh Das">
+<meta property="og:description" content="A step-by-step walkthrough of the CLV method: defining churn, building the customer record, training survival models, and turning survival probabilities into a discounted lifetime value.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #17202b; --muted: #556070; --faint: #8a94a2; --rule: #dde3ea;
+    --bg: #ffffff; --bg-soft: #f4f7f9; --accent: #0e5a63; --accent-soft: #e8f2f3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 17px; line-height: 1.7;
+  }
+  a { color: var(--accent); }
+  .top { border-bottom: 1px solid var(--rule); background: #fff; position: sticky; top: 0; z-index: 5; }
+  .top .wrap { display: flex; justify-content: space-between; align-items: center; height: 56px; gap: 12px; }
+  .top a { text-decoration: none; font-weight: 600; font-size: 14px; }
+  .brand { font-family: "Lora", Georgia, serif; font-size: 18px; color: var(--ink); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+  .tabs { display: flex; gap: 8px; margin: 28px 0 0; flex-wrap: wrap; }
+  .tabs a { padding: 6px 14px; border-radius: 99px; border: 1px solid var(--rule); color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; }
+  .tabs a.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  article { padding: 18px 0 60px; }
+  article > p:first-child { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: 1.1px; text-transform: uppercase; margin-bottom: 0; }
+  h1 { font-family: "Lora", Georgia, serif; font-size: clamp(32px, 5vw, 46px); line-height: 1.12; margin: 8px 0 16px; }
+  h1 + p { font-size: 20px; color: var(--ink); }
+  h2 { font-family: "Lora", Georgia, serif; font-size: 28px; margin: 48px 0 6px; padding-top: 10px; }
+  h3 { font-size: 19px; margin: 10px 0 14px; color: var(--muted); font-weight: 600; }
+  h4 { font-size: 17px; margin: 22px 0 6px; }
+  p, li { color: #2b3542; }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 40px 0 8px; }
+  blockquote {
+    margin: 22px 0; padding: 14px 18px; background: var(--accent-soft); border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+  }
+  blockquote p { margin: 6px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 15px; display: block; overflow-x: auto; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { background: var(--bg-soft); font-weight: 600; white-space: nowrap; }
+  code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 14px; background: var(--bg-soft); padding: 2px 5px; border-radius: 4px; }
+  pre { background: #0f1a22; color: #e6edf3; padding: 16px 18px; border-radius: 10px; overflow-x: auto; font-size: 14px; line-height: 1.55; }
+  pre code { background: none; padding: 0; color: inherit; }
+  .foot { border-top: 1px solid var(--rule); padding: 26px 0 40px; color: var(--faint); font-size: 14px; }
+  .foot .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="wrap">
+    <a class="brand" href="https://agnidas31.github.io/Agnivesh-Das/">Agnivesh Das</a>
+    <a href="https://agnidas31.github.io/Agnivesh-Das/#work">← All work</a>
+  </div>
+</div>
+<div class="wrap">
+  
+  <div class="tabs">
+    <a href="index.html" class="">The story</a>
+    <a href="technical.html" class="on">Technical deep dive</a>
+  </div>
+  
+  <article><p>Technical Deep Dive · Customer Lifetime Value (CLV) · bp</p>
+<h1>How to Calculate Customer Lifetime Value: From Linked Transactions to a 5-Year Value per Customer</h1>
+<p>A step-by-step walkthrough of the CLV method: defining churn, building the customer record, training survival models, and turning survival probabilities into a discounted lifetime value.</p>
+<p>Agnivesh Das · Senior Data Analyst · bp</p>
+<blockquote>
+<p><strong>Note:</strong> this describes the method and model logic. All dates, thresholds, parameters, code, customers and figures are illustrative, not production values or production code.</p>
+</blockquote>
+<hr />
+<h2>The Formula</h2>
+<pre><code>CLV  =  HCM  +  NPV
+
+HCM  = Historical Customer Margin: actual margin earned from the customer over the last 24 months
+
+NPV  = Σ (m = 1 … 60)   S(m) × E[margin(m)] × (1 + inflation)^(m/12)
+                        ─────────────────────────────────────────────
+                                   (1 + discount rate)^(m/12)
+
+S(m)           = predicted probability the customer is still active in month m
+E[margin(m)]   = expected monthly margin if the customer is active
+</code></pre>
+<p>Everything below exists to produce three inputs reliably: <strong>HCM</strong>, <strong>S(m)</strong> and <strong>E[margin(m)]</strong>.</p>
+<hr />
+<h2>The Pipeline at a Glance</h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>What happens</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Link</td>
+<td>Take the unified customer view from SCI</td>
+<td>One record per customer across loyalty, payment and till data</td>
+</tr>
+<tr>
+<td>2. Define windows</td>
+<td>Split history into observation and performance periods</td>
+<td>Time frames for features and labels</td>
+</tr>
+<tr>
+<td>3. Define churn</td>
+<td>Turn "stopped visiting" into an event with a date</td>
+<td>Churn flag + time to churn per customer</td>
+</tr>
+<tr>
+<td>4. Build the CAR</td>
+<td>Engineer features in staged SQL</td>
+<td>Customer Analytic Record (~580 features)</td>
+</tr>
+<tr>
+<td>5. Segment</td>
+<td>Assign each customer to a behavioural segment</td>
+<td>One modelling population per segment</td>
+</tr>
+<tr>
+<td>6. Prepare features</td>
+<td>Clean, cap, scale, de-correlate, select</td>
+<td>60–130 features per segment</td>
+</tr>
+<tr>
+<td>7. Train</td>
+<td>Survival model per segment (GBM with Cox loss)</td>
+<td>Survival curve per customer</td>
+</tr>
+<tr>
+<td>8. Evaluate</td>
+<td>C-index, AUC, rank order, calibration</td>
+<td>Trust in the predictions</td>
+</tr>
+<tr>
+<td>9. Value</td>
+<td>Margin × survival × inflation ÷ discount</td>
+<td>NPV per customer</td>
+</tr>
+<tr>
+<td>10. Score &amp; monitor</td>
+<td>Monthly re-scoring, periodic retraining</td>
+<td>Live CLV per customer</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Step 1: Start From a Linked Customer View</h2>
+<p>CLV needs every purchase attributed to the right customer. That comes from the <strong>Single Customer Identifier (SCI)</strong>:</p>
+<ul>
+<li>Till (EPOS) baskets tell you <em>what</em> was bought and the margin it earned.</li>
+<li>Payment tokens tell you <em>how</em> it was paid.</li>
+<li>Loyalty accounts tell you <em>who</em> bought it.</li>
+</ul>
+<p>SCI links the three, so a loyalty customer's card-paid visits (where they didn't swipe) still count towards their value. Without this, CLV would undervalue exactly the customers who are less engaged with loyalty, often the ones most at risk.</p>
+<p><strong>Unit of analysis:</strong> the loyalty account (<code>account_id</code>), with linked card spend attributed to it.</p>
+<hr />
+<h2>Step 2: Define the Time Windows</h2>
+<p>Split a rolling 24-month history into two halves:</p>
+<pre><code>|&lt;──── Observation period (12 months) ────&gt;|&lt;──── Performance period (12 months) ────&gt;|
+   Nov Y1 ............................ Oct Y2   Nov Y2 ............................ Oct Y3
+        build features from here                      measure churn here
+</code></pre>
+<ul>
+<li><strong>Observation period:</strong> everything the model is allowed to <em>see</em> (features).</li>
+<li><strong>Performance period:</strong> what the model has to <em>predict</em> (did they churn, and when).</li>
+</ul>
+<p>Keeping these strictly separate prevents leakage: no feature may use data from the performance period.</p>
+<hr />
+<h2>Step 3: Define Churn and Time-to-Churn</h2>
+<p>Fuel customers don't cancel; they just stop coming. So churn has to be defined:</p>
+<p><strong>Rule:</strong> a customer's churn date = <strong>last transaction date + 6 months</strong> of inactivity.</p>
+<p>For each customer:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>last_txn_date</code></td>
+<td>Date of last transaction up to the end of the performance period</td>
+</tr>
+<tr>
+<td><code>churn_date</code></td>
+<td><code>last_txn_date</code> + 6 months</td>
+</tr>
+<tr>
+<td><code>churn_flag</code></td>
+<td>1 if <code>churn_date</code> falls within the performance period, otherwise 0</td>
+</tr>
+<tr>
+<td><code>time_to_churn</code></td>
+<td>Months from the start of the performance period to <code>churn_date</code> (if churned); otherwise 12 (censored)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Exclusions:</strong> customers whose churn date falls <em>before</em> the performance period starts had already left during observation. They are removed (they would otherwise be left-censored noise).</p>
+<p><strong>Censoring:</strong> customers with <code>churn_flag = 0</code> haven't churned <em>yet</em>. We know they survived at least 12 months, but not how long beyond that. This is why we use survival models: they learn from censored customers rather than discarding them or treating them as permanent.</p>
+<h3>Illustrative SQL</h3>
+<pre><code class="language-sql">WITH last_txn AS (
+    SELECT account_id,
+           MAX(txn_date) AS last_txn_date
+    FROM   sci_linked_transactions
+    WHERE  txn_date &lt; DATE '2024-11-01'          -- end of performance period
+    GROUP  BY account_id
+),
+labels AS (
+    SELECT account_id,
+           last_txn_date,
+           DATEADD(month, 6, last_txn_date)    AS churn_date
+    FROM   last_txn
+)
+SELECT account_id,
+       CASE WHEN churn_date &lt; DATE '2024-11-01' THEN 1 ELSE 0 END          AS churn_flag,
+       CASE WHEN churn_date &lt; DATE '2024-11-01'
+            THEN DATEDIFF(month, DATE '2023-11-01', churn_date)
+            ELSE 12 END                                                      AS time_to_churn
+FROM   labels
+WHERE  churn_date &gt;= DATE '2023-11-01';           -- exclude customers already churned in observation
+</code></pre>
+<hr />
+<h2>Step 4: Build the Customer Analytic Record (CAR)</h2>
+<p>The CAR is one row per customer, holding everything the model learns from. It is built in SQL in stages, then joined:</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Feature family</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Transactions</strong></td>
+<td>Fuel quantity and spend, shop spend, units, transaction counts, by month, quarter and trend</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Loyalty events &amp; marketing</strong></td>
+<td>Points issued and redeemed, virtual money, coupons, gift redemptions, CRM campaign responses</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Products</strong></td>
+<td>Fuel grade mix (regular vs. premium), shop category mix (convenience, food service, impulse, tobacco)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Customer behaviour flags</strong></td>
+<td>Tenure, first swipe, active / sliding / gone-away flags, days since last visit, visit regularity</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Pricing</strong></td>
+<td>Prices paid vs. competitor prices near the customer's usual sites</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Combine</strong></td>
+<td>Join stages 1–5 on <code>account_id</code> into the final CAR</td>
+</tr>
+</tbody>
+</table>
+<h3>Feature patterns that matter most for churn</h3>
+<ul>
+<li><strong>Recency:</strong> days since last visit.</li>
+<li><strong>Frequency trend:</strong> visits in the last 3 months vs. the 3 months before (a falling ratio signals a sliding customer).</li>
+<li><strong>Monetary trend:</strong> spend and margin, recent vs. earlier.</li>
+<li><strong>Breadth:</strong> fuel only, shop only, or both (customers using both tend to stay longer).</li>
+<li><strong>Engagement:</strong> loyalty redemptions and campaign responses.</li>
+<li><strong>Price exposure:</strong> how often the customer paid above nearby competitor prices.</li>
+</ul>
+<h3>Illustrative SQL (Stage 1 fragment)</h3>
+<pre><code class="language-sql">SELECT account_id,
+       SUM(CASE WHEN item_type = 'FUEL' THEN quantity END)                          AS fuel_litres_12m,
+       SUM(CASE WHEN item_type = 'SHOP' THEN sales_value END)                       AS shop_spend_12m,
+       COUNT(DISTINCT txn_id)                                                       AS txns_12m,
+       COUNT(DISTINCT CASE WHEN txn_date &gt;= DATE '2023-08-01' THEN txn_id END)      AS txns_last_3m,
+       COUNT(DISTINCT CASE WHEN txn_date BETWEEN DATE '2023-05-01'
+                                             AND DATE '2023-07-31' THEN txn_id END) AS txns_prev_3m,
+       DATEDIFF(day, MAX(txn_date), DATE '2023-10-31')                              AS days_since_last_txn
+FROM   sci_linked_transactions
+WHERE  txn_date BETWEEN DATE '2022-11-01' AND DATE '2023-10-31'   -- observation period only
+GROUP  BY account_id;
+</code></pre>
+<h3>Validate the CAR before modelling</h3>
+<ul>
+<li>Aggregate key KPIs (fuel quantity, shop spend, transaction share) by segment and reconcile them to existing dashboards.</li>
+<li>Profile every feature: min, mean, median, 95th / 99th / 99.5th percentiles, to catch broken joins and extreme values.</li>
+</ul>
+<hr />
+<h2>Step 5: Segment the Customers</h2>
+<p>Customers behave very differently, so one model per segment works better than one model for all. Segments are based on transaction volume, value and margin, for example:</p>
+<table>
+<thead>
+<tr>
+<th>Segment</th>
+<th>Group</th>
+<th>Margin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ultimate Fans</td>
+<td>B2C</td>
+<td>High</td>
+</tr>
+<tr>
+<td>Saving Regulars</td>
+<td>B2C</td>
+<td>High</td>
+</tr>
+<tr>
+<td>Partner Focused Loyals</td>
+<td>B2C</td>
+<td>High</td>
+</tr>
+<tr>
+<td>Fuel &amp; Rewards Frequents</td>
+<td>B2C</td>
+<td>High</td>
+</tr>
+<tr>
+<td>Saving Occasionals</td>
+<td>B2C</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Low Fuel Occasionals</td>
+<td>B2C</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Partner Focused Occasionals</td>
+<td>B2C</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Fuel Card Professionals</td>
+<td>B2B</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<p>Churn rates varied several-fold across segments, which is the main reason for modelling them separately.</p>
+<hr />
+<h2>Step 6: Prepare the Features</h2>
+<p>Starting from the full CAR, each segment's feature set is reduced to the 60–130 most useful features:</p>
+<ol>
+<li><strong>Shortlist</strong> business-relevant variables (~370 of ~580).</li>
+<li><strong>Missing values:</strong> fill with 0 (a missing activity count means no activity).</li>
+<li><strong>Duplicates:</strong> remove duplicate rows.</li>
+<li><strong>Near-constant columns:</strong> drop any feature whose most frequent value appears in more than 95% of rows.</li>
+<li><strong>Outliers:</strong> cap ratios, shares and tenure; clip other features at high quantiles.</li>
+<li><strong>Scaling:</strong> standardise numerical features to mean 0, standard deviation 1.</li>
+<li><strong>Correlation:</strong> drop one of each pair of highly correlated features.</li>
+<li><strong>Multicollinearity:</strong> iteratively remove features with high Variance Inflation Factor (VIF).</li>
+<li><strong>Balanced selection:</strong> keep a spread of features across categories (spend, quantity, transactions, marketing, price, behaviour) so no single family dominates.</li>
+</ol>
+<h3>Illustrative Python</h3>
+<pre><code class="language-python">import numpy as np
+import pandas as pd
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+def prepare(car: pd.DataFrame, features: list[str]) -&gt; pd.DataFrame:
+    X = car[features].fillna(0).drop_duplicates()
+
+    # Drop near-constant columns
+    keep = [c for c in X if X[c].value_counts(normalize=True).iloc[0] &lt;= 0.95]
+    X = X[keep]
+
+    # Clip outliers
+    X = X.clip(lower=X.quantile(0.005), upper=X.quantile(0.995), axis=1)
+
+    # Standardise
+    X = (X - X.mean()) / X.std()
+
+    # Drop highly correlated pairs
+    corr = X.corr().abs()
+    upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+    X = X.drop(columns=[c for c in upper if (upper[c] &gt; 0.8).any()])
+
+    # Iteratively remove high-VIF features
+    while True:
+        vif = pd.Series([variance_inflation_factor(X.values, i) for i in range(X.shape[1])],
+                        index=X.columns)
+        if vif.max() &lt; 10:
+            break
+        X = X.drop(columns=vif.idxmax())
+    return X
+</code></pre>
+<hr />
+<h2>Step 7: Train a Survival Model per Segment</h2>
+<h3>Why survival analysis</h3>
+<p>A standard classifier answers "will this customer churn within 12 months?" A survival model answers "<strong>what is the probability this customer is still active at month 1, 2, 3 … 60?</strong>" That full curve, S(m), is exactly what the NPV formula needs, and survival models use censored customers correctly.</p>
+<h3>Models compared</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Strength</th>
+<th>Limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cox Proportional Hazards</td>
+<td>Simple, interpretable hazard ratios</td>
+<td>Assumes linear, constant effects over time</td>
+</tr>
+<tr>
+<td>Random Survival Forest</td>
+<td>Captures non-linear patterns</td>
+<td>Heavier, harder to explain</td>
+</tr>
+<tr>
+<td><strong>Gradient Boosting Survival (Cox loss)</strong></td>
+<td><strong>Best accuracy, handles censoring and non-linearity, explainable via feature importance</strong></td>
+<td>Needs hyperparameter tuning</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Selected:</strong> Gradient Boosting Machine trained with a Cox Proportional Hazards loss.</p>
+<h3>Illustrative Python (scikit-survival)</h3>
+<pre><code class="language-python">from sklearn.model_selection import train_test_split
+from sksurv.util import Surv
+from sksurv.ensemble import GradientBoostingSurvivalAnalysis
+
+y = Surv.from_arrays(event=car[&quot;churn_flag&quot;].astype(bool),
+                     time=car[&quot;time_to_churn&quot;])
+X = prepare(car, feature_list)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42, stratify=car[&quot;churn_flag&quot;])
+
+model = GradientBoostingSurvivalAnalysis(
+    loss=&quot;coxph&quot;,
+    learning_rate=0.05,
+    n_estimators=400,
+    max_depth=3,
+    min_samples_split=50,
+    min_samples_leaf=25,
+    subsample=0.8,
+    random_state=42,
+)
+model.fit(X_train, y_train)
+</code></pre>
+<p><strong>Tuning:</strong> grid or random search over learning rate, number of trees, depth and minimum samples per split and leaf, optimising C-index on a validation fold.</p>
+<p><strong>Extending beyond 12 months:</strong> the model is trained on a 12-month performance window, but CLV needs 60 months. The baseline survival curve is extrapolated beyond the observed window (for example with a fitted parametric tail such as a Weibull or exponential decay), and each customer's risk score scales that baseline.</p>
+<hr />
+<h2>Step 8: Evaluate the Model</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>What it tells you</th>
+<th>Good looks like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>C-index</strong></td>
+<td>How well the model <em>ranks</em> customers by time to churn</td>
+<td>0.5 = random; closer to 1 is better</td>
+</tr>
+<tr>
+<td><strong>Time-dependent AUC (12 months)</strong></td>
+<td>How well it separates churners from non-churners at 12 months</td>
+<td>Well above 0.5</td>
+</tr>
+<tr>
+<td><strong>Accuracy / recall at 12 months</strong></td>
+<td>Simplified confusion matrix using a probability cut-off</td>
+<td>Recall high enough to catch most churners</td>
+</tr>
+<tr>
+<td><strong>Decile rank order</strong></td>
+<td>Do the highest-risk deciles really contain the most churners?</td>
+<td>Churn rate rising steadily from lowest to highest decile</td>
+</tr>
+<tr>
+<td><strong>Survival over time plot</strong></td>
+<td>Mean predicted curve vs. baseline, with 10th–90th percentile band</td>
+<td>Sensible, monotonic, not over-confident</td>
+</tr>
+<tr>
+<td><strong>Feature importance</strong></td>
+<td>Which features drive risk</td>
+<td>Business-plausible drivers (recency, frequency trend, engagement)</td>
+</tr>
+</tbody>
+</table>
+<h3>Illustrative Python</h3>
+<pre><code class="language-python">import numpy as np
+from sksurv.metrics import concordance_index_censored, cumulative_dynamic_auc
+
+risk = model.predict(X_test)
+c_index = concordance_index_censored(y_test[&quot;event&quot;], y_test[&quot;time&quot;], risk)[0]
+
+auc_12m, _ = cumulative_dynamic_auc(y_train, y_test, risk, times=[11.9])
+
+# Decile rank order
+deciles = pd.qcut(risk, 10, labels=False) + 1
+rank_table = (pd.DataFrame({&quot;decile&quot;: deciles, &quot;churned&quot;: y_test[&quot;event&quot;]})
+                .groupby(&quot;decile&quot;)[&quot;churned&quot;].agg([&quot;count&quot;, &quot;mean&quot;]))
+</code></pre>
+<hr />
+<h2>Step 9: Turn Survival Into Value (NPV)</h2>
+<h3>9a. Expected monthly margin</h3>
+<p>For each customer, estimate margin per active month from the observation period, using <strong>margin rates by product</strong>:</p>
+<pre><code>E[margin] = fuel_litres × fuel margin per litre (by grade)
+          + Σ shop spend in category c × margin rate of category c
+</code></pre>
+<p>Using category-level shop margins (food service and hot drinks earn far more per euro than tobacco) means two customers with the same spend can have very different value.</p>
+<h3>9b. Inflation</h3>
+<p>Apply a yearly inflation rate to future margins, converted to a monthly factor:</p>
+<pre><code>inflation_factor(m) = (1 + yearly inflation)^(m / 12)
+</code></pre>
+<h3>9c. Discounting</h3>
+<p>Discount future margin to today's money:</p>
+<pre><code>discount_factor(m) = 1 / (1 + discount rate)^(m / 12)
+</code></pre>
+<h3>9d. Combine</h3>
+<pre><code class="language-python">import numpy as np
+
+months = np.arange(1, 61)                           # 5 years
+
+def npv(surv_curve, monthly_margin, inflation=0.02, discount=0.08):
+    s = surv_curve(months)                          # S(m) for m = 1..60
+    infl = (1 + inflation) ** (months / 12)
+    disc = (1 + discount) ** (-months / 12)
+    return float(np.sum(s * monthly_margin * infl * disc))
+
+surv_fns = model.predict_survival_function(X_score)   # one curve per customer
+car_scored[&quot;npv&quot;] = [npv(fn, m) for fn, m in zip(surv_fns, car_scored[&quot;monthly_margin&quot;])]
+car_scored[&quot;clv&quot;] = car_scored[&quot;hcm_24m&quot;] + car_scored[&quot;npv&quot;]
+</code></pre>
+<p><em>(In production, the 60-month curve uses the extrapolated tail from Step 7, and the NPV calculation is done in SQL against the scored survival tables.)</em></p>
+<h3>Worked example (yearly, simplified)</h3>
+<p>An <em>Ultimate Fans</em> customer with average margin of €18 per month (€216 a year), 2% inflation, 8% discount rate:</p>
+<table>
+<thead>
+<tr>
+<th>Year</th>
+<th>S(year end)</th>
+<th>Expected margin</th>
+<th>Discounted value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0.80</td>
+<td>€216.0</td>
+<td>€160.0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.66</td>
+<td>€220.3</td>
+<td>€124.7</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0.55</td>
+<td>€224.7</td>
+<td>€98.1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0.46</td>
+<td>€229.2</td>
+<td>€77.5</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0.39</td>
+<td>€233.8</td>
+<td>€62.1</td>
+</tr>
+<tr>
+<td><strong>NPV</strong></td>
+<td></td>
+<td></td>
+<td><strong>≈ €522</strong></td>
+</tr>
+</tbody>
+</table>
+<pre><code>HCM (24 months × €18) = €432
+CLV = €432 + €522     ≈ €954
+</code></pre>
+<hr />
+<h2>Step 10: Score Monthly, Retrain Periodically</h2>
+<p><strong>Monthly scoring:</strong></p>
+<ol>
+<li>Refresh the CAR for each segment with the latest rolling window.</li>
+<li>Apply the same preprocessing (using the <em>training</em> parameters for scaling and caps).</li>
+<li>Load each segment's trained model.</li>
+<li>Predict survival curves for every <code>account_id</code>.</li>
+<li>Calculate NPV and CLV, and write results to the output tables.</li>
+<li>Log errors per segment without stopping the whole run.</li>
+</ol>
+<p><strong>Retraining:</strong> every 12–18 months, or sooner if monitoring shows drift.</p>
+<p><strong>Monitoring:</strong></p>
+<ul>
+<li><strong>Data drift:</strong> feature distributions vs. training (for example, population stability index).</li>
+<li><strong>Performance drift:</strong> compare predicted vs. actual churn as new months arrive.</li>
+<li><strong>Value drift:</strong> track the CLV distribution by segment month on month.</li>
+</ul>
+<p><strong>Architecture (illustrative):</strong> data in Amazon S3, exploration in Amazon Athena, model training, validation and scheduled scoring in Amazon SageMaker, with outputs written back to S3 for reporting and activation.</p>
+<hr />
+<h2>Step 11: Use the Output</h2>
+<table>
+<thead>
+<tr>
+<th>Use case</th>
+<th>How CLV is used</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Loyalty rewards</strong></td>
+<td>Reward customers by predicted future value, not just past points</td>
+</tr>
+<tr>
+<td><strong>Retention</strong></td>
+<td>Target high-CLV customers whose survival probability is falling</td>
+</tr>
+<tr>
+<td><strong>Marketing</strong></td>
+<td>Personalise offers and spend by value tier</td>
+</tr>
+<tr>
+<td><strong>Value distribution</strong></td>
+<td>Understand which segments hold most of the future margin</td>
+</tr>
+<tr>
+<td><strong>Investment planning</strong></td>
+<td>Estimate the return of long-term marketing programmes; model inflation's effect on value</td>
+</tr>
+</tbody>
+</table>
+<p>A useful view combines <strong>value</strong> and <strong>risk</strong>:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Low churn risk</th>
+<th>High churn risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>High CLV</strong></td>
+<td>Protect and reward</td>
+<td><strong>Priority: retention offers</strong></td>
+</tr>
+<tr>
+<td><strong>Low CLV</strong></td>
+<td>Grow: cross-sell shop</td>
+<td>Low-cost automated engagement</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Possible Extensions</h2>
+<ul>
+<li><strong>Spend model alongside survival:</strong> predict future margin per active month (for example with a Gamma-Gamma or gradient-boosted regression model) instead of assuming last year's margin continues.</li>
+<li><strong>Probabilistic CLV benchmarks:</strong> compare against BG/NBD + Gamma-Gamma models as a sanity check.</li>
+<li><strong>Uncertainty bands:</strong> report a range for each customer's CLV, not just a point estimate.</li>
+<li><strong>Uplift modelling:</strong> estimate how much a retention offer actually changes survival, to target customers who will respond.</li>
+</ul>
+<hr />
+<p>Created by Agnivesh Das · bp Customer &amp; Product Data · All code, parameters and examples illustrative.</p></article>
+</div>
+<div class="foot">
+  <div class="wrap">
+    <span>Agnivesh Das · <a href="https://agnidas31.github.io/Agnivesh-Das/">Portfolio</a> · <a href="https://www.linkedin.com/in/agnivesh-das/">LinkedIn</a></span>
+    <span>Illustrative figures; confidential details omitted.</span>
+  </div>
+</div>
+</body>
+</html>

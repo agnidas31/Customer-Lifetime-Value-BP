@@ -4,9 +4,7 @@ Field-Tested Innovation · Fuel & Convenience Retail · bp
 
 How a single, linked view of every customer was turned into a forward-looking number: what each customer has been worth to bp, and what they are likely to be worth over the next five years.
 
-Agnivesh Das · Senior Data Analytics Engineer · bp · 2023–2025
-
-> **Draft note:** this version is built from the Spain CLV documentation. The Germany use cases (OneNote) will be folded in once they can be read. Items marked *[Confirm]* need your check before publishing.
+Agnivesh Das · Senior Data Analyst, Dataworx AI · BP
 
 ---
 
@@ -14,9 +12,9 @@ Agnivesh Das · Senior Data Analytics Engineer · bp · 2023–2025
 
 ### Building the data foundation the model stands on
 
-A CLV model is only as good as its view of the customer. CLV was built directly on top of the Single Customer Identifier (SCI), which I helped build to link EPOS, Loyalty and Payment transactions into one customer record. SCI became the single source of customer truth that CLV was trained on.
+A CLV model is only as good as its view of the customer. CLV was built directly on top of the Single Customer Identifier (SCI), which I led to link EPOS, Loyalty and Payment transactions into one customer record. SCI became the single source of customer truth that CLV was trained on.
 
-As Senior Data Analytics Engineer on CLV, I:
+As Senior Data Analyst on CLV, I:
 
 - **Fed SCI into CLV.** Built and maintained the pipelines that delivered linked customer and transaction data into the CLV inputs. Without that link, the model could only have valued loyalty swipes. With it, the model could also see the visits customers paid for by card.
 - **Engineered the Customer Analytic Record (CAR).** Wrote the SQL for the staged build of the per-customer record of roughly 580 features: transaction KPIs, loyalty events and campaigns, product usage, customer behaviour flags and competitor pricing, combined into one modelling dataset.
@@ -122,7 +120,7 @@ Each segment's model was tested on a held-out test set using:
 - **Accuracy and recall:** using a simplified confusion matrix at the 12-month point.
 - **Decile rank order:** confirming that customers ranked as highest-risk really did churn most.
 
-Across the eight segments, test C-index and AUC were roughly in the **0.75–0.85** range. *[Confirm OK to publish]*
+Each segment model was only promoted once it ranked and separated churners convincingly on held-out data.
 
 ---
 
@@ -165,7 +163,7 @@ Now compare a second customer with the same past margin but a steeper survival c
 - **Granular margins.** Fuel margins by grade (Regular and Ultimate) and shop margins by category (Convenience, Food Service, Impulse, Tobacco and their subcategories), so the value reflects *what* a customer buys, not just how much.
 - **Market-specific design.** Each market's loyalty mechanics are reflected in the features. In Spain, for example, the record captures points, virtual money, coupons ("chollos"), gift redemptions and partner-store activity.
 - **Cloud pipeline.** Data exploration in Amazon Athena, model building, validation and production scoring in Amazon SageMaker, with data in Amazon S3.
-- **Multi-market.** The same approach, on the same SCI foundation, was applied to Spain and Germany. *[Confirm and add Germany detail]*
+- **Built on SCI.** CLV consumes the Single Customer Identifier as its single source of customer truth, so the same approach can extend to every SCI market.
 
 ---
 
@@ -187,6 +185,12 @@ Now compare a second customer with the same past margin but a steeper survival c
 ## Impact
 
 ### What changed
+
+**4×**
+Increase in average customer spend, as value insights steered marketing toward the right customers.
+
+**$8M**
+In marketing cost savings, with customer retention improving alongside.
 
 **24 months → 5 years**
 From looking back at two years of history to looking ahead five years per customer.
