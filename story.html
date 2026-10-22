@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Lifetime Value (CLV) · Agnivesh Das</title>
+<meta name="description" content="How a single, linked view of every customer was turned into a forward-looking number: what each customer has been worth to bp, and what they are likely to be worth over the next five years.">
+<meta property="og:title" content="Customer Lifetime Value (CLV) · Agnivesh Das">
+<meta property="og:description" content="How a single, linked view of every customer was turned into a forward-looking number: what each customer has been worth to bp, and what they are likely to be worth over the next five years.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #17202b; --muted: #556070; --faint: #8a94a2; --rule: #dde3ea;
+    --bg: #ffffff; --bg-soft: #f7f8fa; --accent: #b4541a; --accent-soft: #fbede3; --navy: #172340;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 17px; line-height: 1.7;
+  }
+  a { color: var(--accent); }
+  .top { border-bottom: 1px solid var(--rule); background: #fff; position: sticky; top: 0; z-index: 5; }
+  .top .wrap { display: flex; justify-content: space-between; align-items: center; height: 56px; gap: 12px; }
+  .top a { text-decoration: none; font-weight: 600; font-size: 14px; }
+  .brand { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; color: var(--ink); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+  .tabs { display: flex; gap: 8px; margin: 28px 0 0; flex-wrap: wrap; }
+  .tabs a { padding: 6px 14px; border-radius: 99px; border: 1px solid var(--rule); color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; }
+  .tabs a.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+  article { padding: 18px 0 60px; }
+  article > p:first-child { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: 1.1px; text-transform: uppercase; margin-bottom: 0; }
+  h1 { color: var(--navy); font-family: "Source Serif 4", Georgia, serif; font-size: clamp(32px, 5vw, 46px); line-height: 1.12; margin: 8px 0 16px; }
+  h1 + p { font-size: 20px; color: var(--ink); }
+  h2 { color: var(--navy); font-family: "Source Serif 4", Georgia, serif; font-size: 28px; margin: 48px 0 6px; padding-top: 10px; }
+  h3 { font-size: 19px; margin: 10px 0 14px; color: var(--muted); font-weight: 600; }
+  h4 { font-size: 17px; margin: 22px 0 6px; }
+  p, li { color: #2b3542; }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 40px 0 8px; }
+  blockquote {
+    margin: 22px 0; padding: 14px 18px; background: var(--accent-soft); border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+  }
+  blockquote p { margin: 6px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 15px; display: block; overflow-x: auto; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { background: var(--bg-soft); font-weight: 600; white-space: nowrap; }
+  code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 14px; background: var(--bg-soft); padding: 2px 5px; border-radius: 4px; }
+  pre { background: #0f1a22; color: #e6edf3; padding: 16px 18px; border-radius: 10px; overflow-x: auto; font-size: 14px; line-height: 1.55; }
+  pre code { background: none; padding: 0; color: inherit; }
+  .foot { border-top: 1px solid var(--rule); padding: 26px 0 40px; color: var(--faint); font-size: 14px; }
+  .foot .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="wrap">
+    <a class="brand" href="https://agnidas31.github.io/Agnivesh-Das/">Agnivesh Das</a>
+    <a href="https://agnidas31.github.io/Agnivesh-Das/#work">← All work</a>
+  </div>
+</div>
+<div class="wrap">
+  <div class="tabs">
+    <a href="index.html">At a glance</a>
+    <a href="story.html" class="on">The story</a>
+    <a href="technical.html" class="">Technical deep dive</a>
+  </div>
+  <article><p>Case Study · Fuel &amp; Convenience Retail · bp</p>
+<h1>Customer Lifetime Value (CLV)</h1>
+<p>How a single, linked view of every customer was turned into a forward-looking number: what each customer has been worth to bp, and what they are likely to be worth over the next five years.</p>
+<p>Agnivesh Das · Senior Data Analyst, Dataworx AI · BP</p>
+<hr />
+<h2>My Role</h2>
+<h3>Building the data foundation the model stands on</h3>
+<p>A CLV model is only as good as its view of the customer. CLV was built directly on top of the Single Customer Identifier (SCI), which I led to link EPOS, Loyalty and Payment transactions into one customer record. SCI became the single source of customer truth that CLV was trained on.</p>
+<p>As Senior Data Analyst on CLV, I:</p>
+<ul>
+<li><strong>Fed SCI into CLV.</strong> Built and maintained the pipelines that delivered linked customer and transaction data into the CLV inputs. Without that link, the model could only have valued loyalty swipes. With it, the model could also see the visits customers paid for by card.</li>
+<li><strong>Engineered the Customer Analytic Record (CAR).</strong> Wrote the SQL for the staged build of the per-customer record of roughly 580 features: transaction KPIs, loyalty events and campaigns, product usage, customer behaviour flags and competitor pricing, combined into one modelling dataset.</li>
+<li><strong>Partnered with the data scientists.</strong> Worked alongside the modelling team on the rest of the project, so that the data the model learned from was accurate, complete and fit for purpose.</li>
+</ul>
+<hr />
+<h2>The Problem</h2>
+<h3>Every customer looked the same size, because only the past was visible</h3>
+<p>Before CLV, the business could see what customers <em>had</em> spent, and only in fragments. Loyalty, marketing, pricing and store teams each had their own partial view, which led to fragmented decisions.</p>
+<p>What nobody could answer was the question that actually drives investment:</p>
+<ul>
+<li><strong>Which customers are worth the most over the long run</strong>, not just last month?</li>
+<li><strong>Who is about to leave</strong>, while there is still time to keep them?</li>
+<li><strong>How much should we spend</strong> to acquire, reward or win back a given customer?</li>
+</ul>
+<p>A customer who spent heavily last year but is drifting away, and a modest spender who visits every week without fail, looked the same in a historical report. Their future value to bp is very different.</p>
+<hr />
+<h2>The Constraint Nobody Was Naming</h2>
+<h3>In fuel retail, customers never tell you they've left</h3>
+<p>A mobile phone customer cancels a contract. A fuel customer just stops coming. That made "lifetime" hard to measure, for three reasons:</p>
+<p><strong>1. There is no churn event to observe.</strong> A customer who hasn't visited for two months might be on holiday, or might be gone for good. Churn had to be <em>defined</em> before it could be predicted.</p>
+<p><strong>2. Most customers haven't churned yet.</strong> At any point in time, most customers are still active, so their true lifetime is unknown. A standard model either ignores them or treats them as if they will never leave. Both are wrong. This is called <strong>censored data</strong>, and it needs survival analysis rather than ordinary regression.</p>
+<p><strong>3. Customers are not one population.</strong> A high-margin "Ultimate Fan" and a low-fuel occasional visitor churn at very different rates, buy different products, and respond to different offers. One model for everyone would blur exactly the differences the business needed to see.</p>
+<p>The business didn't need a better report of last year's spend. It needed a model that could estimate, customer by customer, how long they would stay and what that time was worth.</p>
+<hr />
+<h2>The Fix</h2>
+<h3>Past margin + predicted survival + discounting = lifetime value</h3>
+<p>CLV combines two parts:</p>
+<pre><code>CLV = Historical Customer Margin (HCM)  +  Net Present Value of future margin (NPV)
+</code></pre>
+<ul>
+<li><strong>HCM</strong> is what the customer has actually contributed in margin over the last 24 months.</li>
+<li><strong>NPV</strong> is what they are expected to contribute over the next 5 years, weighted by the probability they are still a customer at each point, and discounted back to today's money.</li>
+</ul>
+<p>Three settings define the model:</p>
+<p><strong>X: Observation &amp; Performance Windows</strong>
+12 months to observe each customer's behaviour, followed by 12 months to see whether they churned. The model is built on a rolling 24-month history.</p>
+<p><strong>Y: Churn Definition</strong>
+A customer is treated as churned six months after their last transaction. Customers who had already churned before the observation window are excluded.</p>
+<p><strong>Z: Forecast Horizon &amp; Discounting</strong>
+Future margin is projected for up to 5 years, adjusted for inflation and discounted to present value.</p>
+<h3>How it works</h3>
+<ol>
+<li><strong>Link:</strong> Take the unified customer view from SCI: loyalty accounts linked to their card payments and till baskets.</li>
+<li><strong>Segment:</strong> Assign each customer to one of eight behavioural segments (seven B2C, one B2B), from high-margin "Ultimate Fans" to "Low Fuel Occasionals" and "Fuel Card Professionals".</li>
+<li><strong>Build the CAR:</strong> Create a Customer Analytic Record with roughly 580 features per customer, built in SQL in five stages: transactions, loyalty events and campaigns, products, customer behaviour flags and competitor pricing.</li>
+<li><strong>Predict survival:</strong> Train a survival model per segment that predicts, for each customer, the probability they are still active at each month over the next 5 years.</li>
+<li><strong>Value the future:</strong> Multiply expected survival by expected margin (category-level fuel and shop margins), apply inflation, and discount to present value.</li>
+<li><strong>Score monthly:</strong> Re-score every customer each month to track movement in value and churn risk; retrain the models every 12–18 months.</li>
+</ol>
+<hr />
+<h2>Choosing the Model</h2>
+<h3>Three survival models tested, one clear winner</h3>
+<p>Three survival techniques were tested on the same segment:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>What it does</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cox Proportional Hazards</strong></td>
+<td>Classic statistical survival model; assumes each factor's effect on churn risk is constant over time</td>
+<td>Interpretable, but too rigid for non-linear behaviour</td>
+</tr>
+<tr>
+<td><strong>Random Survival Forest</strong></td>
+<td>Many decision trees, each predicting a survival curve</td>
+<td>Handles complexity, harder to tune and explain</td>
+</tr>
+<tr>
+<td><strong>Gradient Boosting Machine (survival)</strong></td>
+<td>Boosted trees trained with a Cox loss function, so it handles censored data</td>
+<td><strong>Selected:</strong> best predictive accuracy, handles censoring, and still explainable through feature importance</td>
+</tr>
+</tbody>
+</table>
+<h3>Getting from 580 features to the ones that matter</h3>
+<p>For each segment, the feature set was cut down to the most informative 60–130 features:</p>
+<ul>
+<li>Removed duplicates and near-constant columns (one value more than 95% of the time).</li>
+<li>Capped outliers on ratios, shares and tenure.</li>
+<li>Standardised numerical features.</li>
+<li>Dropped highly correlated features and used the Variance Inflation Factor (VIF) to remove multicollinearity.</li>
+<li>Kept a balanced mix across categories: spend, quantity, transactions, marketing, price and customer behaviour.</li>
+</ul>
+<h3>Checking it works</h3>
+<p>Each segment's model was tested on a held-out test set using:</p>
+<ul>
+<li><strong>Concordance index (C-index):</strong> how well the model ranks customers by how long they will stay.</li>
+<li><strong>AUC-ROC at 12 months:</strong> how well it separates customers who churn within a year from those who don't.</li>
+<li><strong>Accuracy and recall:</strong> using a simplified confusion matrix at the 12-month point.</li>
+<li><strong>Decile rank order:</strong> confirming that customers ranked as highest-risk really did churn most.</li>
+</ul>
+<p>Each segment model was only promoted once it ranked and separated churners convincingly on held-out data.</p>
+<hr />
+<h2>Worked Example</h2>
+<h3>What a CLV score actually looks like</h3>
+<blockquote>
+<p><strong>Note:</strong> the method reflects how the model actually worked. The customer, margins, survival probabilities and rates below are illustrative, not real production figures.</p>
+</blockquote>
+<p><strong>Customer:</strong> loyalty account in the <em>Ultimate Fans</em> segment (high-margin B2C, buys premium fuel and shop items).</p>
+<p><strong>Step 1: Historical Customer Margin (last 24 months)</strong>
+Average margin of €18 a month across fuel and shop → <strong>HCM = €432</strong></p>
+<p><strong>Step 2: Predicted survival (from the segment model)</strong></p>
+<table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Probability still active</th>
+<th>Expected annual margin (2% inflation)</th>
+<th>Discounted at 8%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0.80</td>
+<td>€216.0</td>
+<td>€160.0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.66</td>
+<td>€220.3</td>
+<td>€124.7</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0.55</td>
+<td>€224.7</td>
+<td>€98.1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0.46</td>
+<td>€229.2</td>
+<td>€77.5</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0.39</td>
+<td>€233.8</td>
+<td>€62.1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 3: Net Present Value of future margin</strong> → <strong>NPV ≈ €522</strong></p>
+<p><strong>Step 4: Customer Lifetime Value</strong>
+<strong>CLV = €432 + €522 ≈ €954</strong></p>
+<p>Now compare a second customer with the same past margin but a steeper survival curve (for example 0.55 after year 1). Their HCM is identical, but their NPV, and therefore their CLV, is far lower. That is the difference a historical report could never show, and it is exactly where retention spend should go.</p>
+<hr />
+<h2>Built to Scale</h2>
+<h3>A repeatable, monthly CLV product</h3>
+<ul>
+<li><strong>Monthly scoring.</strong> Every customer is re-scored each month with the pre-trained segment models, so changes in value and churn risk are tracked over time.</li>
+<li><strong>Periodic retraining.</strong> Models are retrained every 12–18 months to keep up with changing customer behaviour and inflation.</li>
+<li><strong>Granular margins.</strong> Fuel margins by grade (Regular and Ultimate) and shop margins by category (Convenience, Food Service, Impulse, Tobacco and their subcategories), so the value reflects <em>what</em> a customer buys, not just how much.</li>
+<li><strong>Market-specific design.</strong> Each market's loyalty mechanics are reflected in the features. In Spain, for example, the record captures points, virtual money, coupons ("chollos"), gift redemptions and partner-store activity.</li>
+<li><strong>Cloud pipeline.</strong> Data exploration in Amazon Athena, model building, validation and production scoring in Amazon SageMaker, with data in Amazon S3.</li>
+<li><strong>Built on SCI.</strong> CLV consumes the Single Customer Identifier as its single source of customer truth, so the same approach can extend to every SCI market.</li>
+</ul>
+<hr />
+<h2>Why This Beat The Old Approach</h2>
+<h3>Same customers, fundamentally different view of their value</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Before CLV</th>
+<th>With CLV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>View of value</td>
+<td>Past spend only</td>
+<td>Past margin + 5-year predicted margin</td>
+</tr>
+<tr>
+<td>Churn</td>
+<td>Noticed after the customer was already gone</td>
+<td>Predicted per customer, month by month</td>
+</tr>
+<tr>
+<td>Measure used</td>
+<td>Revenue</td>
+<td>Margin, by fuel grade and shop category</td>
+</tr>
+<tr>
+<td>Customers treated as</td>
+<td>One population</td>
+<td>Eight behavioural segments, each with its own model</td>
+</tr>
+<tr>
+<td>Inflation and time value</td>
+<td>Ignored</td>
+<td>Inflation-adjusted and discounted to present value</td>
+</tr>
+<tr>
+<td>Freshness</td>
+<td>Ad hoc reports</td>
+<td>Re-scored monthly, retrained every 12–18 months</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Impact</h2>
+<h3>What changed</h3>
+<p><strong>4×</strong>
+Increase in average customer spend, as value insights steered marketing toward the right customers.</p>
+<p><strong>$8M</strong>
+In marketing cost savings, with customer retention improving alongside.</p>
+<p><strong>24 months → 5 years</strong>
+From looking back at two years of history to looking ahead five years per customer.</p>
+<p><strong>8 segment models</strong>
+A dedicated survival model for each customer segment.</p>
+<p><strong>~580 features</strong>
+Per customer, across transactions, loyalty events, products, behaviour and pricing.</p>
+<p><strong>Monthly</strong>
+Every customer re-scored each month.</p>
+<p><strong>What the business could now do:</strong></p>
+<ul>
+<li><strong>Reward loyalty based on value:</strong> align loyalty rewards with each customer's predicted future value, not just past points.</li>
+<li><strong>Target retention:</strong> focus offers on valuable customers whose survival is falling, before they leave.</li>
+<li><strong>Personalise marketing:</strong> tailor promotions to projected value instead of sending the same offer to everyone.</li>
+<li><strong>Plan long-term investment:</strong> evaluate the return of marketing programmes and model the impact of inflation on customer value.</li>
+</ul>
+<p>The bigger shift wasn't building a churn model. It was changing the question from "what did this customer spend?" to "what is this customer worth, and how is that changing?" That gave loyalty, marketing and pricing teams one shared number to make decisions with.</p>
+<hr />
+<p>Created by Agnivesh Das · bp Customer &amp; Product Data · Illustrative example: customer, margins and rates fictionalised. CAR = Customer Analytic Record. SCI = Single Customer Identifier.</p></article>
+</div>
+<div class="foot">
+  <div class="wrap">
+    <span>Agnivesh Das · <a href="https://agnidas31.github.io/Agnivesh-Das/">Portfolio</a> · <a href="https://www.linkedin.com/in/agnivesh-das/">LinkedIn</a></span>
+    <span>Illustrative figures; confidential details omitted.</span>
+  </div>
+</div>
+</body>
+</html>

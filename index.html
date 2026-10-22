@@ -3,319 +3,405 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Customer Lifetime Value (CLV) · Agnivesh Das</title>
-<meta name="description" content="How a single, linked view of every customer was turned into a forward-looking number: what each customer has been worth to bp, and what they are likely to be worth over the next five years.">
-<meta property="og:title" content="Customer Lifetime Value (CLV) · Agnivesh Das">
-<meta property="og:description" content="How a single, linked view of every customer was turned into a forward-looking number: what each customer has been worth to bp, and what they are likely to be worth over the next five years.">
+<title>Customer Lifetime Value · Agnivesh Das</title>
+<meta name="description" content="A forward-looking value for every customer: what they have been worth, and what they are likely to be worth over the next five years.">
+<meta property="og:title" content="Customer Lifetime Value · Agnivesh Das">
+<meta property="og:description" content="A forward-looking value for every customer: what they have been worth, and what they are likely to be worth over the next five years.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #17202b; --muted: #556070; --faint: #8a94a2; --rule: #dde3ea;
-    --bg: #ffffff; --bg-soft: #f7f8fa; --accent: #b4541a; --accent-soft: #fbede3; --navy: #172340;
+    --navy: #172340; --ink: #1b2230; --muted: #5a6679; --faint: #8b95a6; --rule: #e4e7ed;
+    --bg: #fff; --bg-soft: #f7f8fa; --accent: #b4541a; --accent-ink: #8f4214; --accent-soft: #fbede3;
+    --accent-bright: #f0a36c; --c1: #2f5597; --ok: #1d7a4f; --warn: #a15c00; --no: #a8322d;
+    --radius: 12px; --max: 1140px;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 17px; line-height: 1.7;
-  }
+  html { scroll-behavior: smooth; }
+  html, body { overflow-x: hidden; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; }
   a { color: var(--accent); }
-  .top { border-bottom: 1px solid var(--rule); background: #fff; position: sticky; top: 0; z-index: 5; }
-  .top .wrap { display: flex; justify-content: space-between; align-items: center; height: 56px; gap: 12px; }
-  .top a { text-decoration: none; font-weight: 600; font-size: 14px; }
-  .brand { font-family: "Source Serif 4", Georgia, serif; font-size: 18px; color: var(--ink); }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
-  .tabs { display: flex; gap: 8px; margin: 28px 0 0; flex-wrap: wrap; }
-  .tabs a { padding: 6px 14px; border-radius: 99px; border: 1px solid var(--rule); color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; }
-  .tabs a.on { background: var(--navy); border-color: var(--navy); color: #fff; }
-  article { padding: 18px 0 60px; }
-  article > p:first-child { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: 1.1px; text-transform: uppercase; margin-bottom: 0; }
-  h1 { color: var(--navy); font-family: "Source Serif 4", Georgia, serif; font-size: clamp(32px, 5vw, 46px); line-height: 1.12; margin: 8px 0 16px; }
-  h1 + p { font-size: 20px; color: var(--ink); }
-  h2 { color: var(--navy); font-family: "Source Serif 4", Georgia, serif; font-size: 28px; margin: 48px 0 6px; padding-top: 10px; }
-  h3 { font-size: 19px; margin: 10px 0 14px; color: var(--muted); font-weight: 600; }
-  h4 { font-size: 17px; margin: 22px 0 6px; }
-  p, li { color: #2b3542; }
-  hr { border: 0; border-top: 1px solid var(--rule); margin: 40px 0 8px; }
-  blockquote {
-    margin: 22px 0; padding: 14px 18px; background: var(--accent-soft); border-left: 4px solid var(--accent);
-    border-radius: 0 8px 8px 0;
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 22px; }
+  .serif, h1, h2, h3 { font-family: "Source Serif 4", Georgia, serif; }
+
+  #progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--accent); z-index: 30; }
+  .nav { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); }
+  .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 14px; }
+  .brand { font-family: "Source Serif 4", Georgia, serif; font-weight: 700; font-size: 19px; color: var(--navy); text-decoration: none; white-space: nowrap; }
+  .nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; align-items: center; }
+  .nav ul a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; }
+  .nav ul a:hover { color: var(--navy); }
+  .nav .pill { background: var(--navy); color: #fff !important; padding: 7px 13px; border-radius: 8px; }
+
+  .hero { position: relative; background: var(--navy); color: #fff; overflow: hidden; }
+  .hero::before { content: ""; position: absolute; inset: 0;
+    background: radial-gradient(600px 320px at 88% 0%, rgba(240,163,108,.18), transparent 70%), radial-gradient(500px 300px at 0% 100%, rgba(255,255,255,.06), transparent 70%); }
+  .hero .wrap { position: relative; padding-top: 64px; padding-bottom: 56px; }
+  .eyebrow { color: var(--accent-bright); font-weight: 600; font-size: 13px; letter-spacing: 1.3px; text-transform: uppercase; }
+  .hero h1 { font-size: clamp(38px, 6vw, 62px); line-height: 1.04; margin: 10px 0 16px; }
+  .hero .hook { font-size: clamp(18px, 2.2vw, 22px); max-width: 800px; margin: 0 0 18px; color: #e8ecf4; }
+  .byline { color: #b9c3d6; font-size: 14.5px; }
+  .byline b { color: #fff; font-weight: 600; }
+  .stack { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .stack span { font-size: 12.5px; border: 1px solid rgba(255,255,255,.25); color: #dfe5ef; padding: 3px 10px; border-radius: 99px; }
+  .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 36px; }
+  .results div { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius); padding: 16px 18px; }
+  .results b { display: block; font-family: "Source Serif 4", Georgia, serif; font-size: 34px; line-height: 1.05; }
+  .results span { color: #c6cfdf; font-size: 14px; }
+  .results-note { color: #8f9ab0; font-size: 12.5px; margin-top: 10px; }
+
+  .banner { background: var(--accent-soft); border-bottom: 1px solid #f1d6c3; color: var(--accent-ink); font-size: 14px; }
+  .banner .wrap { padding-top: 10px; padding-bottom: 10px; }
+
+  section { padding: 72px 0; }
+  section.soft { background: var(--bg-soft); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .kicker { display: flex; align-items: center; gap: 10px; color: var(--accent); font-weight: 700; font-size: 12.5px; letter-spacing: 1.3px; text-transform: uppercase; margin: 0 0 8px; }
+  .kicker .n { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 12px; letter-spacing: 0; }
+  h2 { font-size: clamp(27px, 3.6vw, 38px); line-height: 1.15; margin: 0 0 10px; color: var(--navy); }
+  .sub { color: var(--muted); margin: 0 0 30px; max-width: 780px; font-size: 17px; }
+  .card { background: #fff; border: 1px solid var(--rule); border-radius: var(--radius); padding: 22px; }
+  .card h3 { margin: 0 0 4px; font-size: 19px; color: var(--navy); }
+  .card .csub { color: var(--muted); font-size: 13.5px; margin: 0 0 16px; }
+
+  /* Problem */
+  .prob { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; align-items: start; }
+  .points { display: grid; gap: 12px; }
+  .point { border-left: 4px solid var(--accent); background: #fff; border-radius: 0 10px 10px 0; padding: 14px 16px; border-top: 1px solid var(--rule); border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .point b { display: block; color: var(--navy); margin-bottom: 2px; }
+  .point p { margin: 0; color: var(--muted); font-size: 15px; }
+  .srcs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .src { border: 1px solid var(--rule); border-radius: 10px; padding: 14px; background: var(--bg-soft); }
+  .src b { display: block; color: var(--navy); font-size: 16px; }
+  .src em { display: block; font-style: normal; color: var(--accent); font-size: 12.5px; font-weight: 600; margin-bottom: 8px; }
+  .src dl { margin: 0; }
+  .src dl div { padding: 6px 0; border-top: 1px dashed var(--rule); }
+  .src dt { font-size: 11.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--faint); }
+  .src dd { margin: 0; font-size: 14px; color: var(--ink); }
+  .nokey { margin-top: 12px; display: flex; align-items: center; gap: 10px; border: 1.5px dashed #d9a98a; border-radius: 10px; padding: 10px 14px; color: var(--accent-ink); font-weight: 600; font-size: 14.5px; background: #fffaf6; }
+  .nokey span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; flex: none; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .pair h4 { margin: 0 0 8px; font-size: 13.5px; color: var(--muted); font-weight: 600; }
+  .onenum { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
+  .onenum .big { background: var(--navy); color: #fff; border-radius: 10px; padding: 18px; font: 700 54px/1 "Source Serif 4", Georgia, serif; }
+  .onenum .big small { display: block; font: 500 13px "Inter", sans-serif; color: #b9c3d6; margin-bottom: 10px; }
+  .onenum .big span { font-size: 20px; color: #c6cfdf; }
+  .onenum .big em { display: block; font: 600 14px "Inter", sans-serif; color: var(--accent-bright); margin-top: 12px; }
+  .onenum .why { display: flex; flex-direction: column; gap: 6px; }
+  .onenum .why b { color: var(--navy); }
+  .onenum .why span { border: 1px dashed #c9cfd9; border-radius: 8px; padding: 5px 10px; font-size: 14px; color: var(--muted); }
+
+  /* Approach */
+  .steps { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; counter-reset: s; margin-bottom: 22px; }
+  .step { position: relative; background: #fff; border: 1px solid var(--rule); border-radius: 10px; padding: 14px 14px 16px; }
+  .step::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; }
+  .step:not(:last-child)::after { content: ""; position: absolute; right: -9px; top: 24px; width: 8px; height: 2px; background: var(--accent); }
+  .step b { display: block; color: var(--navy); margin: 8px 0 4px; font-size: 15.5px; }
+  .step p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  .formula { background: var(--navy); color: #fff; border-radius: 10px; padding: 14px 18px; font-size: 15.5px; margin-bottom: 14px; }
+  .formula div { padding: 3px 0; }
+  .formula b { color: var(--accent-bright); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips span { background: var(--accent-soft); color: var(--accent-ink); padding: 5px 12px; border-radius: 99px; font-size: 14px; font-weight: 500; }
+  .tbl { overflow-x: auto; }
+  .tbl table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .tbl th, .tbl td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--rule); }
+  .tbl th { background: var(--bg-soft); font-weight: 600; font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .st { font-weight: 600; font-size: 13.5px; white-space: nowrap; }
+  .st.ok { color: var(--ok); } .st.warn { color: var(--warn); } .st.no { color: var(--no); }
+
+  /* Contribution */
+  .contrib { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .contrib .card { border-top: 4px solid var(--accent); }
+  .contrib .lab { font-size: 11.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  .contrib h3 { margin: 4px 0 8px; }
+  .contrib p { color: var(--muted); font-size: 15px; margin: 0 0 14px; }
+  .contrib .chips span { font-size: 12.5px; padding: 3px 10px; background: var(--bg-soft); color: var(--ink); border: 1px solid var(--rule); }
+
+  /* Output: dashboard frame */
+  .dash { border: 1px solid #cfd5df; border-radius: 14px; overflow: hidden; background: #eef1f5; box-shadow: 0 18px 40px rgba(23,35,64,.08); }
+  .dash-bar { display: flex; align-items: center; gap: 8px; background: var(--navy); color: #c6cfdf; font-size: 13px; padding: 10px 14px; }
+  .dash-bar i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.25); }
+  .dash-bar span { margin-left: 8px; } .dash-bar em { margin-left: auto; font-style: normal; color: var(--accent-bright); font-weight: 600; }
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px; }
+  .panels .card { padding: 18px; }
+  .panels .wide { grid-column: 1 / -1; }
+  .panels > *, .prob > *, .pair > *, .onenum > * { min-width: 0; }
+
+  /* Charts */
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .hb { position: relative; display: grid; gap: 8px; }
+  .hb-row, .db-row { display: grid; grid-template-columns: minmax(90px, 38%) 1fr auto; align-items: center; gap: 10px; font-size: 13.5px; }
+  .hb-l { color: var(--ink); line-height: 1.25; }
+  .hb-v { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 44px; text-align: right; }
+  .hb-t { display: flex; gap: 2px; height: 16px; }
+  .hb-t i, .db-t i, .col i, .wf-c i, .dot { cursor: default; outline: none; }
+  .hb-t i { display: block; height: 100%; border-radius: 0 4px 4px 0; transition: opacity .15s; }
+  .hb-t.stack i { border-radius: 0; } .hb-t.stack i:last-child { border-radius: 0 4px 4px 0; }
+  .hb-ref { position: absolute; top: -4px; bottom: -4px; left: calc(min(38%, 100%) + 10px); right: 54px; pointer-events: none; }
+  .hb-ref::before { content: ""; position: absolute; left: var(--x); top: 0; bottom: 0; border-left: 1.5px dashed var(--navy); }
+  .hb-ref span { position: absolute; left: var(--x); bottom: -20px; transform: translateX(-50%); font-size: 11.5px; color: var(--navy); font-weight: 600; white-space: nowrap; }
+  .hb:has(.hb-ref) { margin-bottom: 22px; }
+  .db { display: grid; gap: 8px; }
+  .db-t { position: relative; height: 16px; }
+  .db-t::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; border-left: 1.5px solid #9aa3b2; }
+  .db-t i { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+  .db-row.hl .hb-l, .db-row.hl .hb-v { font-weight: 700; color: var(--navy); }
+  .cols { display: flex; align-items: flex-end; gap: 6px; height: var(--h); border-bottom: 1.5px solid #9aa3b2; }
+  .col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+  .col i { display: block; width: 100%; max-width: 72px; border-radius: 4px 4px 0 0; }
+  .cv { font-size: 12px; color: var(--muted); margin-bottom: 4px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cols-x { display: flex; gap: 6px; margin-top: 6px; }
+  .cols-x span { flex: 1; text-align: center; font-size: 12px; color: var(--muted); line-height: 1.25; }
+  .sx { overflow-x: auto; scrollbar-width: thin; }
+  .cols-x span.tot { font-weight: 700; color: var(--navy); }
+  .wf { position: relative; display: flex; gap: 6px; height: var(--h); border-bottom: 1.5px solid #9aa3b2; margin-top: 18px; }
+  .wf-c { flex: 1; position: relative; height: 100%; }
+  .wf-c i { position: absolute; left: 8%; right: 8%; border-radius: 4px; }
+  .wf-c i span { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 3px; font-size: 12px; color: var(--ink); font-weight: 600; white-space: nowrap; font-style: normal; }
+  .lc { height: var(--h); padding: 6px 10px 26px 44px; }
+  .plot { position: relative; height: 100%; }
+  .plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .gl { position: absolute; left: 0; right: 0; border-top: 1px solid #edf0f4; }
+  .gl span { position: absolute; right: calc(100% + 8px); top: -9px; font-size: 11.5px; color: var(--faint); white-space: nowrap; }
+  .vl { position: absolute; top: -4px; bottom: 0; border-left: 1.5px dashed var(--navy); }
+  .vl span { position: absolute; top: -2px; left: 6px; font-size: 11.5px; font-weight: 600; color: var(--navy); white-space: nowrap; background: rgba(255,255,255,.85); padding: 0 3px; }
+  .dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; transform: translate(-50%, 50%); box-shadow: 0 0 0 2px #fff; }
+  .dot::after { content: ""; position: absolute; inset: -8px; }
+  .xl { position: absolute; top: calc(100% + 6px); transform: translateX(-50%); font-size: 11.5px; color: var(--faint); white-space: nowrap; }
+  [data-tip]:hover, [data-tip]:focus { filter: brightness(1.12); }
+  #tip { position: fixed; z-index: 50; pointer-events: none; background: var(--navy); color: #fff; font-size: 13px; padding: 6px 10px; border-radius: 7px; box-shadow: 0 6px 18px rgba(0,0,0,.18); opacity: 0; transition: opacity .1s; max-width: 260px; }
+  .dt { margin-top: 12px; font-size: 13px; }
+  .dt summary { cursor: pointer; color: var(--faint); }
+  .dt table { margin-top: 8px; border-collapse: collapse; width: 100%; }
+  .dt th, .dt td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--rule); }
+  .readout p { margin: 0 0 12px; color: var(--muted); font-size: 15px; }
+  .readout b { color: var(--navy); }
+  .readout .calc { font-family: ui-monospace, Menlo, monospace; background: var(--bg-soft); padding: 8px 10px; border-radius: 6px; color: var(--ink); font-size: 13.5px; }
+
+  /* Impact */
+  .impact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .icard { background: #fff; border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; }
+  .icard .m { font: 700 34px/1.05 "Source Serif 4", Georgia, serif; color: var(--navy); }
+  .icard .l { font-weight: 700; margin-top: 6px; }
+  .icard .d { color: var(--muted); font-size: 14.5px; margin-top: 8px; line-height: 1.5; }
+  .ba { margin-top: 26px; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: #fff; }
+  .ba-row { display: grid; grid-template-columns: 1fr 1.3fr 28px 1.5fr; gap: 12px; align-items: center; padding: 12px 18px; border-top: 1px solid var(--rule); font-size: 15px; }
+  .ba-row:first-child { border-top: 0; background: var(--bg-soft); font-size: 12.5px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-weight: 600; }
+  .ba-row .k { font-weight: 600; color: var(--navy); }
+  .ba-row .b { color: var(--muted); text-decoration: line-through; text-decoration-color: #c9cfd9; }
+  .ba-row .ar { color: var(--accent); font-weight: 700; text-align: center; }
+  .ba-row .a { color: var(--ink); font-weight: 500; }
+  .closing { margin: 30px 0 0; font: 600 clamp(20px, 2.6vw, 26px)/1.35 "Source Serif 4", Georgia, serif; color: var(--navy); border-left: 4px solid var(--accent); padding-left: 18px; }
+
+  .more { background: var(--navy); color: #fff; }
+  .more .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 18px; padding-top: 44px; padding-bottom: 44px; }
+  .more h2 { color: #fff; margin: 0; font-size: 28px; }
+  .more p { margin: 4px 0 0; color: #b9c3d6; }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn { display: inline-flex; padding: 11px 18px; border-radius: 9px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid rgba(255,255,255,.35); color: #fff; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); }
+  .btn:hover { filter: brightness(1.08); }
+  .foot { padding: 24px 0 36px; color: var(--faint); font-size: 13.5px; }
+  .foot .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+  @media (max-width: 980px) {
+    .steps { grid-template-columns: repeat(3, 1fr); }
+    .step::after { display: none; }
+    .impact { grid-template-columns: repeat(2, 1fr); }
+    .prob { grid-template-columns: 1fr; }
+    .nav ul li.sec { display: none; }
   }
-  blockquote p { margin: 6px 0; }
-  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 15px; display: block; overflow-x: auto; }
-  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
-  th { background: var(--bg-soft); font-weight: 600; white-space: nowrap; }
-  code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 14px; background: var(--bg-soft); padding: 2px 5px; border-radius: 4px; }
-  pre { background: #0f1a22; color: #e6edf3; padding: 16px 18px; border-radius: 10px; overflow-x: auto; font-size: 14px; line-height: 1.55; }
-  pre code { background: none; padding: 0; color: inherit; }
-  .foot { border-top: 1px solid var(--rule); padding: 26px 0 40px; color: var(--faint); font-size: 14px; }
-  .foot .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  @media (max-width: 720px) {
+    section { padding: 52px 0; }
+    .wrap { padding: 0 16px; }
+    .results, .contrib, .panels, .pair, .onenum { grid-template-columns: 1fr; }
+    .srcs { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .panels { padding: 10px; gap: 10px; }
+    .panels .card { padding: 14px; }
+    .ba-row { grid-template-columns: 1fr; gap: 2px; }
+    .ba-row:first-child { display: none; }
+    .ba-row .ar { display: none; }
+    .ba-row .b::before { content: "Before: "; text-decoration: none; display: inline; }
+    .ba-row .a::before { content: "After: "; color: var(--accent); font-weight: 600; }
+    .nav ul li.cs { display: none; }
+    .dash-bar span { display: none; }
+    .sx-in { min-width: calc(var(--n) * 74px); padding-bottom: 4px; }
+    .tbl td:first-child { white-space: nowrap; }
+  }
+  @media (max-width: 420px) {
+    .impact, .steps { grid-template-columns: 1fr; }
+    .hb-row, .db-row { grid-template-columns: 34% 1fr auto; gap: 8px; font-size: 13px; }
+  }
 </style>
 </head>
 <body>
-<div class="top">
+<div id="progress"></div>
+<div id="tip" role="status"></div>
+<nav class="nav">
   <div class="wrap">
     <a class="brand" href="https://agnidas31.github.io/Agnivesh-Das/">Agnivesh Das</a>
-    <a href="https://agnidas31.github.io/Agnivesh-Das/#work">← All work</a>
+    <ul>
+      <li class="sec"><a href="#problem">Problem</a></li>
+      <li class="sec"><a href="#approach">Approach</a></li>
+      <li class="sec"><a href="#role">My role</a></li>
+      <li class="sec"><a href="#output">Output</a></li>
+      <li class="sec"><a href="#impact">Impact</a></li>
+      <li class="cs"><a href="story.html">Full case study</a></li>
+      <li><a class="pill" href="https://agnidas31.github.io/Agnivesh-Das/#work">← All work</a></li>
+    </ul>
   </div>
-</div>
-<div class="wrap">
-  
-  <div class="tabs">
-    <a href="index.html" class="on">The story</a>
-    <a href="technical.html" class="">Technical deep dive</a>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">BP · Fuel &amp; Convenience Retail · Customer value</div>
+    <h1>Customer Lifetime Value</h1>
+    <p class="hook">A forward-looking value for every customer: what they have been worth, and what they are likely to be worth over the next five years.</p>
+    <div class="byline"><b>Agnivesh Das</b> · Senior Data Analyst, Dataworx AI · BP</div>
+    <div class="stack"><span>SQL</span><span>Survival analysis</span><span>Amazon SageMaker</span><span>Athena / S3</span></div>
+    <div class="results">
+      <div><b>4×</b><span>increase in average customer spend</span></div><div><b>$8M</b><span>marketing cost savings</span></div><div><b>8</b><span>segment-level survival models</span></div>
+    </div>
+    <div class="results-note">Headline results as reported. Everything below the line uses illustrative data.</div>
   </div>
-  
-  <article><p>Case Study · Fuel &amp; Convenience Retail · bp</p>
-<h1>Customer Lifetime Value (CLV)</h1>
-<p>How a single, linked view of every customer was turned into a forward-looking number: what each customer has been worth to bp, and what they are likely to be worth over the next five years.</p>
-<p>Agnivesh Das · Senior Data Analyst, Dataworx AI · BP</p>
-<hr />
-<h2>My Role</h2>
-<h3>Building the data foundation the model stands on</h3>
-<p>A CLV model is only as good as its view of the customer. CLV was built directly on top of the Single Customer Identifier (SCI), which I led to link EPOS, Loyalty and Payment transactions into one customer record. SCI became the single source of customer truth that CLV was trained on.</p>
-<p>As Senior Data Analyst on CLV, I:</p>
-<ul>
-<li><strong>Fed SCI into CLV.</strong> Built and maintained the pipelines that delivered linked customer and transaction data into the CLV inputs. Without that link, the model could only have valued loyalty swipes. With it, the model could also see the visits customers paid for by card.</li>
-<li><strong>Engineered the Customer Analytic Record (CAR).</strong> Wrote the SQL for the staged build of the per-customer record of roughly 580 features: transaction KPIs, loyalty events and campaigns, product usage, customer behaviour flags and competitor pricing, combined into one modelling dataset.</li>
-<li><strong>Partnered with the data scientists.</strong> Worked alongside the modelling team on the rest of the project, so that the data the model learned from was accurate, complete and fit for purpose.</li>
-</ul>
-<hr />
-<h2>The Problem</h2>
-<h3>Every customer looked the same size, because only the past was visible</h3>
-<p>Before CLV, the business could see what customers <em>had</em> spent, and only in fragments. Loyalty, marketing, pricing and store teams each had their own partial view, which led to fragmented decisions.</p>
-<p>What nobody could answer was the question that actually drives investment:</p>
-<ul>
-<li><strong>Which customers are worth the most over the long run</strong>, not just last month?</li>
-<li><strong>Who is about to leave</strong>, while there is still time to keep them?</li>
-<li><strong>How much should we spend</strong> to acquire, reward or win back a given customer?</li>
-</ul>
-<p>A customer who spent heavily last year but is drifting away, and a modest spender who visits every week without fail, looked the same in a historical report. Their future value to bp is very different.</p>
-<hr />
-<h2>The Constraint Nobody Was Naming</h2>
-<h3>In fuel retail, customers never tell you they've left</h3>
-<p>A mobile phone customer cancels a contract. A fuel customer just stops coming. That made "lifetime" hard to measure, for three reasons:</p>
-<p><strong>1. There is no churn event to observe.</strong> A customer who hasn't visited for two months might be on holiday, or might be gone for good. Churn had to be <em>defined</em> before it could be predicted.</p>
-<p><strong>2. Most customers haven't churned yet.</strong> At any point in time, most customers are still active, so their true lifetime is unknown. A standard model either ignores them or treats them as if they will never leave. Both are wrong. This is called <strong>censored data</strong>, and it needs survival analysis rather than ordinary regression.</p>
-<p><strong>3. Customers are not one population.</strong> A high-margin "Ultimate Fan" and a low-fuel occasional visitor churn at very different rates, buy different products, and respond to different offers. One model for everyone would blur exactly the differences the business needed to see.</p>
-<p>The business didn't need a better report of last year's spend. It needed a model that could estimate, customer by customer, how long they would stay and what that time was worth.</p>
-<hr />
-<h2>The Fix</h2>
-<h3>Past margin + predicted survival + discounting = lifetime value</h3>
-<p>CLV combines two parts:</p>
-<pre><code>CLV = Historical Customer Margin (HCM)  +  Net Present Value of future margin (NPV)
-</code></pre>
-<ul>
-<li><strong>HCM</strong> is what the customer has actually contributed in margin over the last 24 months.</li>
-<li><strong>NPV</strong> is what they are expected to contribute over the next 5 years, weighted by the probability they are still a customer at each point, and discounted back to today's money.</li>
-</ul>
-<p>Three settings define the model:</p>
-<p><strong>X: Observation &amp; Performance Windows</strong>
-12 months to observe each customer's behaviour, followed by 12 months to see whether they churned. The model is built on a rolling 24-month history.</p>
-<p><strong>Y: Churn Definition</strong>
-A customer is treated as churned six months after their last transaction. Customers who had already churned before the observation window are excluded.</p>
-<p><strong>Z: Forecast Horizon &amp; Discounting</strong>
-Future margin is projected for up to 5 years, adjusted for inflation and discounted to present value.</p>
-<h3>How it works</h3>
-<ol>
-<li><strong>Link:</strong> Take the unified customer view from SCI: loyalty accounts linked to their card payments and till baskets.</li>
-<li><strong>Segment:</strong> Assign each customer to one of eight behavioural segments (seven B2C, one B2B), from high-margin "Ultimate Fans" to "Low Fuel Occasionals" and "Fuel Card Professionals".</li>
-<li><strong>Build the CAR:</strong> Create a Customer Analytic Record with roughly 580 features per customer, built in SQL in five stages: transactions, loyalty events and campaigns, products, customer behaviour flags and competitor pricing.</li>
-<li><strong>Predict survival:</strong> Train a survival model per segment that predicts, for each customer, the probability they are still active at each month over the next 5 years.</li>
-<li><strong>Value the future:</strong> Multiply expected survival by expected margin (category-level fuel and shop margins), apply inflation, and discount to present value.</li>
-<li><strong>Score monthly:</strong> Re-score every customer each month to track movement in value and churn risk; retrain the models every 12–18 months.</li>
-</ol>
-<hr />
-<h2>Choosing the Model</h2>
-<h3>Three survival models tested, one clear winner</h3>
-<p>Three survival techniques were tested on the same segment:</p>
-<table>
-<thead>
-<tr>
-<th>Model</th>
-<th>What it does</th>
-<th>Result</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Cox Proportional Hazards</strong></td>
-<td>Classic statistical survival model; assumes each factor's effect on churn risk is constant over time</td>
-<td>Interpretable, but too rigid for non-linear behaviour</td>
-</tr>
-<tr>
-<td><strong>Random Survival Forest</strong></td>
-<td>Many decision trees, each predicting a survival curve</td>
-<td>Handles complexity, harder to tune and explain</td>
-</tr>
-<tr>
-<td><strong>Gradient Boosting Machine (survival)</strong></td>
-<td>Boosted trees trained with a Cox loss function, so it handles censored data</td>
-<td><strong>Selected:</strong> best predictive accuracy, handles censoring, and still explainable through feature importance</td>
-</tr>
-</tbody>
-</table>
-<h3>Getting from 580 features to the ones that matter</h3>
-<p>For each segment, the feature set was cut down to the most informative 60–130 features:</p>
-<ul>
-<li>Removed duplicates and near-constant columns (one value more than 95% of the time).</li>
-<li>Capped outliers on ratios, shares and tenure.</li>
-<li>Standardised numerical features.</li>
-<li>Dropped highly correlated features and used the Variance Inflation Factor (VIF) to remove multicollinearity.</li>
-<li>Kept a balanced mix across categories: spend, quantity, transactions, marketing, price and customer behaviour.</li>
-</ul>
-<h3>Checking it works</h3>
-<p>Each segment's model was tested on a held-out test set using:</p>
-<ul>
-<li><strong>Concordance index (C-index):</strong> how well the model ranks customers by how long they will stay.</li>
-<li><strong>AUC-ROC at 12 months:</strong> how well it separates customers who churn within a year from those who don't.</li>
-<li><strong>Accuracy and recall:</strong> using a simplified confusion matrix at the 12-month point.</li>
-<li><strong>Decile rank order:</strong> confirming that customers ranked as highest-risk really did churn most.</li>
-</ul>
-<p>Each segment model was only promoted once it ranked and separated churners convincingly on held-out data.</p>
-<hr />
-<h2>Worked Example</h2>
-<h3>What a CLV score actually looks like</h3>
-<blockquote>
-<p><strong>Note:</strong> the method reflects how the model actually worked. The customer, margins, survival probabilities and rates below are illustrative, not real production figures.</p>
-</blockquote>
-<p><strong>Customer:</strong> loyalty account in the <em>Ultimate Fans</em> segment (high-margin B2C, buys premium fuel and shop items).</p>
-<p><strong>Step 1: Historical Customer Margin (last 24 months)</strong>
-Average margin of €18 a month across fuel and shop → <strong>HCM = €432</strong></p>
-<p><strong>Step 2: Predicted survival (from the segment model)</strong></p>
-<table>
-<thead>
-<tr>
-<th>Year</th>
-<th>Probability still active</th>
-<th>Expected annual margin (2% inflation)</th>
-<th>Discounted at 8%</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>0.80</td>
-<td>€216.0</td>
-<td>€160.0</td>
-</tr>
-<tr>
-<td>2</td>
-<td>0.66</td>
-<td>€220.3</td>
-<td>€124.7</td>
-</tr>
-<tr>
-<td>3</td>
-<td>0.55</td>
-<td>€224.7</td>
-<td>€98.1</td>
-</tr>
-<tr>
-<td>4</td>
-<td>0.46</td>
-<td>€229.2</td>
-<td>€77.5</td>
-</tr>
-<tr>
-<td>5</td>
-<td>0.39</td>
-<td>€233.8</td>
-<td>€62.1</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Step 3: Net Present Value of future margin</strong> → <strong>NPV ≈ €522</strong></p>
-<p><strong>Step 4: Customer Lifetime Value</strong>
-<strong>CLV = €432 + €522 ≈ €954</strong></p>
-<p>Now compare a second customer with the same past margin but a steeper survival curve (for example 0.55 after year 1). Their HCM is identical, but their NPV, and therefore their CLV, is far lower. That is the difference a historical report could never show, and it is exactly where retention spend should go.</p>
-<hr />
-<h2>Built to Scale</h2>
-<h3>A repeatable, monthly CLV product</h3>
-<ul>
-<li><strong>Monthly scoring.</strong> Every customer is re-scored each month with the pre-trained segment models, so changes in value and churn risk are tracked over time.</li>
-<li><strong>Periodic retraining.</strong> Models are retrained every 12–18 months to keep up with changing customer behaviour and inflation.</li>
-<li><strong>Granular margins.</strong> Fuel margins by grade (Regular and Ultimate) and shop margins by category (Convenience, Food Service, Impulse, Tobacco and their subcategories), so the value reflects <em>what</em> a customer buys, not just how much.</li>
-<li><strong>Market-specific design.</strong> Each market's loyalty mechanics are reflected in the features. In Spain, for example, the record captures points, virtual money, coupons ("chollos"), gift redemptions and partner-store activity.</li>
-<li><strong>Cloud pipeline.</strong> Data exploration in Amazon Athena, model building, validation and production scoring in Amazon SageMaker, with data in Amazon S3.</li>
-<li><strong>Built on SCI.</strong> CLV consumes the Single Customer Identifier as its single source of customer truth, so the same approach can extend to every SCI market.</li>
-</ul>
-<hr />
-<h2>Why This Beat The Old Approach</h2>
-<h3>Same customers, fundamentally different view of their value</h3>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>Before CLV</th>
-<th>With CLV</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>View of value</td>
-<td>Past spend only</td>
-<td>Past margin + 5-year predicted margin</td>
-</tr>
-<tr>
-<td>Churn</td>
-<td>Noticed after the customer was already gone</td>
-<td>Predicted per customer, month by month</td>
-</tr>
-<tr>
-<td>Measure used</td>
-<td>Revenue</td>
-<td>Margin, by fuel grade and shop category</td>
-</tr>
-<tr>
-<td>Customers treated as</td>
-<td>One population</td>
-<td>Eight behavioural segments, each with its own model</td>
-</tr>
-<tr>
-<td>Inflation and time value</td>
-<td>Ignored</td>
-<td>Inflation-adjusted and discounted to present value</td>
-</tr>
-<tr>
-<td>Freshness</td>
-<td>Ad hoc reports</td>
-<td>Re-scored monthly, retrained every 12–18 months</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2>Impact</h2>
-<h3>What changed</h3>
-<p><strong>4×</strong>
-Increase in average customer spend, as value insights steered marketing toward the right customers.</p>
-<p><strong>$8M</strong>
-In marketing cost savings, with customer retention improving alongside.</p>
-<p><strong>24 months → 5 years</strong>
-From looking back at two years of history to looking ahead five years per customer.</p>
-<p><strong>8 segment models</strong>
-A dedicated survival model for each customer segment.</p>
-<p><strong>~580 features</strong>
-Per customer, across transactions, loyalty events, products, behaviour and pricing.</p>
-<p><strong>Monthly</strong>
-Every customer re-scored each month.</p>
-<p><strong>What the business could now do:</strong></p>
-<ul>
-<li><strong>Reward loyalty based on value:</strong> align loyalty rewards with each customer's predicted future value, not just past points.</li>
-<li><strong>Target retention:</strong> focus offers on valuable customers whose survival is falling, before they leave.</li>
-<li><strong>Personalise marketing:</strong> tailor promotions to projected value instead of sending the same offer to everyone.</li>
-<li><strong>Plan long-term investment:</strong> evaluate the return of marketing programmes and model the impact of inflation on customer value.</li>
-</ul>
-<p>The bigger shift wasn't building a churn model. It was changing the question from "what did this customer spend?" to "what is this customer worth, and how is that changing?" That gave loyalty, marketing and pricing teams one shared number to make decisions with.</p>
-<hr />
-<p>Created by Agnivesh Das · bp Customer &amp; Product Data · Illustrative example: customer, margins and rates fictionalised. CAR = Customer Analytic Record. SCI = Single Customer Identifier.</p></article>
+</header>
+<div class="banner"><div class="wrap"><b>Illustrative data.</b> Every chart, table and example on this page uses fictitious numbers to show how the work was done. No real BP data is shown.</div></div>
+
+<section id="problem">
+  <div class="wrap">
+    <p class="kicker"><span class="n">1</span>The problem</p>
+    <h2>Every customer looked the same size, because only the past was visible</h2>
+    <p class="sub">Two customers with identical past spend can be worth very different amounts in the future. A historical report can&#39;t tell them apart.</p>
+    <div class="prob">
+      <div class="card"><div class="legend"><span><i style="background:#2f5597"></i>Past margin (what reports showed)</span><span><i style="background:#b4541a"></i>Future value (what nobody saw)</span></div><div class="hb"><div class="hb-row"><span class="hb-l">Customer A: steady weekly visitor</span><span class="hb-t stack"><i style="width:43.20%;background:#2f5597" data-tip="Customer A: steady weekly visitor, Past margin (what reports showed): €432" tabindex="0"></i><i style="width:52.20%;background:#b4541a" data-tip="Customer A: steady weekly visitor, Future value (what nobody saw): €522" tabindex="0"></i></span><span class="hb-v">€954</span></div><div class="hb-row"><span class="hb-l">Customer B: drifting away</span><span class="hb-t stack"><i style="width:43.20%;background:#2f5597" data-tip="Customer B: drifting away, Past margin (what reports showed): €432" tabindex="0"></i><i style="width:28.30%;background:#b4541a" data-tip="Customer B: drifting away, Future value (what nobody saw): €283" tabindex="0"></i></span><span class="hb-v">€715</span></div></div><details class="dt"><summary>View data</summary><table><thead><tr><th>Item</th><th>Past margin (what reports showed)</th><th>Future value (what nobody saw)</th><th>Total</th></tr></thead><tbody><tr><td>Customer A: steady weekly visitor</td><td>€432</td><td>€522</td><td>€954</td></tr><tr><td>Customer B: drifting away</td><td>€432</td><td>€283</td><td>€715</td></tr></tbody></table></details></div>
+      <div class="points">
+        <div class="point"><b>No churn event</b><p>Fuel customers don&#39;t cancel, they just stop coming. Churn had to be defined first.</p></div><div class="point"><b>Censored data</b><p>Most customers are still active, so their true lifetime is unknown. That needs survival analysis.</p></div><div class="point"><b>Not one population</b><p>An “Ultimate Fan” and a “Low Fuel Occasional” churn at very different rates.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="approach" class="soft">
+  <div class="wrap">
+    <p class="kicker"><span class="n">2</span>The approach</p>
+    <h2>Past margin + predicted survival + discounting</h2>
+    <p class="sub">CLV = Historical Customer Margin (24 months) + Net Present Value of the next 5 years.</p>
+    <div class="steps">
+      <div class="step"><b>Link</b><p>Start from SCI&#39;s unified customer view: loyalty, card and till data in one record.</p></div><div class="step"><b>Segment</b><p>Assign each customer to one of eight behavioural segments.</p></div><div class="step"><b>Build the CAR</b><p>A Customer Analytic Record of ~580 features, built in SQL in five stages.</p></div><div class="step"><b>Predict survival</b><p>A gradient-boosting survival model (Cox loss) per segment.</p></div><div class="step"><b>Value the future</b><p>Survival × expected margin, inflation-adjusted and discounted to today.</p></div><div class="step"><b>Score monthly</b><p>Re-score every customer monthly; retrain every 12–18 months.</p></div>
+    </div>
+    <div class="card">
+      <h3>How one customer&#39;s CLV builds up (illustrative customer, €)</h3>
+      <div style="margin-top:14px"><div class="sx"><div class="sx-in" style="--n:7"><div class="wf" style="--h:220px"><div class="wf-c"><i style="bottom:0.00%;height:39.36%;background:#2f5597" data-tip="Past 24 mo.: +€432" tabindex="0"><span>+€432</span></i></div><div class="wf-c"><i style="bottom:39.36%;height:14.58%;background:#2f5597" data-tip="Year 1: +€160" tabindex="0"><span>+€160</span></i></div><div class="wf-c"><i style="bottom:53.94%;height:11.36%;background:#2f5597" data-tip="Year 2: +€125" tabindex="0"><span>+€125</span></i></div><div class="wf-c"><i style="bottom:65.30%;height:8.94%;background:#2f5597" data-tip="Year 3: +€98" tabindex="0"><span>+€98</span></i></div><div class="wf-c"><i style="bottom:74.24%;height:7.06%;background:#2f5597" data-tip="Year 4: +€78" tabindex="0"><span>+€78</span></i></div><div class="wf-c"><i style="bottom:81.30%;height:5.66%;background:#2f5597" data-tip="Year 5: +€62" tabindex="0"><span>+€62</span></i></div><div class="wf-c"><i style="bottom:0.00%;height:86.96%;background:#172340" data-tip="CLV: €954" tabindex="0"><span>€954</span></i></div></div><div class="cols-x"><span class="">Past 24 mo.</span><span class="">Year 1</span><span class="">Year 2</span><span class="">Year 3</span><span class="">Year 4</span><span class="">Year 5</span><span class="tot">CLV</span></div></div></div><details class="dt"><summary>View data</summary><table><thead><tr><th>Component</th><th>Value</th></tr></thead><tbody><tr><td>Past 24 mo.</td><td>+€432</td></tr><tr><td>Year 1</td><td>+€160</td></tr><tr><td>Year 2</td><td>+€125</td></tr><tr><td>Year 3</td><td>+€98</td></tr><tr><td>Year 4</td><td>+€78</td></tr><tr><td>Year 5</td><td>+€62</td></tr><tr><td>CLV</td><td>€954</td></tr></tbody></table></details></div>
+    </div>
+  </div>
+</section>
+
+<section id="role">
+  <div class="wrap">
+    <p class="kicker"><span class="n">3</span>My contribution</p>
+    <h2>What I owned, end to end</h2>
+    <p class="sub">Senior Data Analyst, Dataworx AI. I built the data foundation the model stands on, and partnered with the data scientists on the rest.</p>
+    <div class="contrib">
+      
+      <div class="card"><div class="lab">Pipeline</div><h3>Fed SCI into CLV</h3><p>Built and maintained the pipelines that delivered linked customer and transaction data into the model inputs.</p>
+        <div class="chips"><span>SCI → CLV feeds</span><span>Card-paid visits included</span></div></div>
+      
+      <div class="card"><div class="lab">Features</div><h3>Engineered the CAR</h3><p>Wrote the SQL for the staged build of the ~580-feature Customer Analytic Record.</p>
+        <div class="chips"><span>Transactions</span><span>Loyalty &amp; campaigns</span><span>Products</span><span>Behaviour flags</span><span>Competitor pricing</span></div></div>
+      
+      <div class="card"><div class="lab">Partnership</div><h3>Worked with the data scientists</h3><p>Partnered with the modelling team so the data the model learned from was accurate, complete and fit for purpose.</p>
+        <div class="chips"><span>Data quality</span><span>Feature reduction support</span></div></div>
+      
+    </div>
+  </div>
+</section>
+
+<section id="output" class="soft">
+  <div class="wrap">
+    <p class="kicker"><span class="n">4</span>The output</p>
+    <h2>One shared number for loyalty, marketing and pricing</h2>
+    <p class="sub">A recreation of the finished product with fictitious data. Hover or tap any bar or point for its value.</p>
+    <div class="dash">
+      <div class="dash-bar"><i></i><i></i><i></i><span>Customer Lifetime Value</span><em>Illustrative data</em></div>
+      <div class="panels">
+        
+        <div class="card"><h3>Predicted survival by segment</h3><p class="csub">Probability a customer is still active</p><div class="legend"><span><i style="background:#00927f"></i>Fuel Card Professionals</span><span><i style="background:#2f5597"></i>Ultimate Fans</span><span><i style="background:#b4541a"></i>Low Fuel Occasionals</span></div><div class="lc" style="--h:240px"><div class="plot"><div class="gl" style="bottom:0.00%"><span>0%</span></div><div class="gl" style="bottom:25.00%"><span>25%</span></div><div class="gl" style="bottom:50.00%"><span>50%</span></div><div class="gl" style="bottom:75.00%"><span>75%</span></div><div class="gl" style="bottom:100.00%"><span>100%</span></div><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="#00927f" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="0.00,0.00 20.00,14.00 40.00,25.00 60.00,34.00 80.00,42.00 100.00,48.00"/><polyline fill="none" stroke="#2f5597" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="0.00,0.00 20.00,20.00 40.00,34.00 60.00,45.00 80.00,54.00 100.00,61.00"/><polyline fill="none" stroke="#b4541a" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="0.00,0.00 20.00,45.00 40.00,62.00 60.00,73.00 80.00,81.00 100.00,87.00"/></svg><i class="dot" style="left:0.00%;bottom:100.00%;background:#00927f" data-tip="Fuel Card Professionals, Now: 100%" tabindex="0"></i><i class="dot" style="left:20.00%;bottom:86.00%;background:#00927f" data-tip="Fuel Card Professionals, Y1: 86%" tabindex="0"></i><i class="dot" style="left:40.00%;bottom:75.00%;background:#00927f" data-tip="Fuel Card Professionals, Y2: 75%" tabindex="0"></i><i class="dot" style="left:60.00%;bottom:66.00%;background:#00927f" data-tip="Fuel Card Professionals, Y3: 66%" tabindex="0"></i><i class="dot" style="left:80.00%;bottom:58.00%;background:#00927f" data-tip="Fuel Card Professionals, Y4: 58%" tabindex="0"></i><i class="dot" style="left:100.00%;bottom:52.00%;background:#00927f" data-tip="Fuel Card Professionals, Y5: 52%" tabindex="0"></i><i class="dot" style="left:0.00%;bottom:100.00%;background:#2f5597" data-tip="Ultimate Fans, Now: 100%" tabindex="0"></i><i class="dot" style="left:20.00%;bottom:80.00%;background:#2f5597" data-tip="Ultimate Fans, Y1: 80%" tabindex="0"></i><i class="dot" style="left:40.00%;bottom:66.00%;background:#2f5597" data-tip="Ultimate Fans, Y2: 66%" tabindex="0"></i><i class="dot" style="left:60.00%;bottom:55.00%;background:#2f5597" data-tip="Ultimate Fans, Y3: 55%" tabindex="0"></i><i class="dot" style="left:80.00%;bottom:46.00%;background:#2f5597" data-tip="Ultimate Fans, Y4: 46%" tabindex="0"></i><i class="dot" style="left:100.00%;bottom:39.00%;background:#2f5597" data-tip="Ultimate Fans, Y5: 39%" tabindex="0"></i><i class="dot" style="left:0.00%;bottom:100.00%;background:#b4541a" data-tip="Low Fuel Occasionals, Now: 100%" tabindex="0"></i><i class="dot" style="left:20.00%;bottom:55.00%;background:#b4541a" data-tip="Low Fuel Occasionals, Y1: 55%" tabindex="0"></i><i class="dot" style="left:40.00%;bottom:38.00%;background:#b4541a" data-tip="Low Fuel Occasionals, Y2: 38%" tabindex="0"></i><i class="dot" style="left:60.00%;bottom:27.00%;background:#b4541a" data-tip="Low Fuel Occasionals, Y3: 27%" tabindex="0"></i><i class="dot" style="left:80.00%;bottom:19.00%;background:#b4541a" data-tip="Low Fuel Occasionals, Y4: 19%" tabindex="0"></i><i class="dot" style="left:100.00%;bottom:13.00%;background:#b4541a" data-tip="Low Fuel Occasionals, Y5: 13%" tabindex="0"></i><span class="xl" style="left:0.00%">Now</span><span class="xl" style="left:20.00%">Y1</span><span class="xl" style="left:40.00%">Y2</span><span class="xl" style="left:60.00%">Y3</span><span class="xl" style="left:80.00%">Y4</span><span class="xl" style="left:100.00%">Y5</span></div></div><details class="dt"><summary>View data</summary><table><thead><tr><th></th><th>Fuel Card Professionals</th><th>Ultimate Fans</th><th>Low Fuel Occasionals</th></tr></thead><tbody><tr><td>Now</td><td>100%</td><td>100%</td><td>100%</td></tr><tr><td>Y1</td><td>86%</td><td>80%</td><td>55%</td></tr><tr><td>Y2</td><td>75%</td><td>66%</td><td>38%</td></tr><tr><td>Y3</td><td>66%</td><td>55%</td><td>27%</td></tr><tr><td>Y4</td><td>58%</td><td>46%</td><td>19%</td></tr><tr><td>Y5</td><td>52%</td><td>39%</td><td>13%</td></tr></tbody></table></details></div>
+        
+        <div class="card"><h3>Model selection</h3><p class="csub">Concordance index on held-out customers (higher is better)</p><div class="hb"><div class="hb-row"><span class="hb-l">Cox proportional hazards</span><span class="hb-t"><i style="width:71.00%;background:#2f5597" data-tip="Cox proportional hazards: 0.71" tabindex="0"></i></span><span class="hb-v">0.71</span></div><div class="hb-row"><span class="hb-l">Random survival forest</span><span class="hb-t"><i style="width:74.00%;background:#2f5597" data-tip="Random survival forest: 0.74" tabindex="0"></i></span><span class="hb-v">0.74</span></div><div class="hb-row"><span class="hb-l">Gradient boosting (Cox loss)</span><span class="hb-t"><i style="width:78.00%;background:#b4541a" data-tip="Gradient boosting (Cox loss): 0.78" tabindex="0"></i></span><span class="hb-v">0.78</span></div></div><details class="dt"><summary>View data</summary><table><thead><tr><th>Item</th><th>Value</th></tr></thead><tbody><tr><td>Cox proportional hazards</td><td>0.71</td></tr><tr><td>Random survival forest</td><td>0.74</td></tr><tr><td>Gradient boosting (Cox loss)</td><td>0.78</td></tr></tbody></table></details></div>
+        
+        <div class="card wide"><h3>Average CLV by customer decile</h3><p class="csub">€ per customer; top decile highlighted</p><div class="sx"><div class="sx-in" style="--n:10"><div class="cols" style="--h:220px"><div class="col"><span class="cv">€2,380</span><i style="height:89.29%;background:#b4541a" data-tip="D1: €2,380" tabindex="0"></i></div><div class="col"><span class="cv">€1,510</span><i style="height:56.65%;background:#2f5597" data-tip="D2: €1,510" tabindex="0"></i></div><div class="col"><span class="cv">€1,090</span><i style="height:40.89%;background:#2f5597" data-tip="D3: €1,090" tabindex="0"></i></div><div class="col"><span class="cv">€820</span><i style="height:30.76%;background:#2f5597" data-tip="D4: €820" tabindex="0"></i></div><div class="col"><span class="cv">€610</span><i style="height:22.88%;background:#2f5597" data-tip="D5: €610" tabindex="0"></i></div><div class="col"><span class="cv">€450</span><i style="height:16.88%;background:#2f5597" data-tip="D6: €450" tabindex="0"></i></div><div class="col"><span class="cv">€320</span><i style="height:12.00%;background:#2f5597" data-tip="D7: €320" tabindex="0"></i></div><div class="col"><span class="cv">€210</span><i style="height:7.88%;background:#2f5597" data-tip="D8: €210" tabindex="0"></i></div><div class="col"><span class="cv">€130</span><i style="height:4.88%;background:#2f5597" data-tip="D9: €130" tabindex="0"></i></div><div class="col"><span class="cv">€60</span><i style="height:2.25%;background:#2f5597" data-tip="D10: €60" tabindex="0"></i></div></div><div class="cols-x"><span>D1</span><span>D2</span><span>D3</span><span>D4</span><span>D5</span><span>D6</span><span>D7</span><span>D8</span><span>D9</span><span>D10</span></div></div></div><details class="dt"><summary>View data</summary><table><thead><tr><th>Item</th><th>Value</th></tr></thead><tbody><tr><td>D1</td><td>€2,380</td></tr><tr><td>D2</td><td>€1,510</td></tr><tr><td>D3</td><td>€1,090</td></tr><tr><td>D4</td><td>€820</td></tr><tr><td>D5</td><td>€610</td></tr><tr><td>D6</td><td>€450</td></tr><tr><td>D7</td><td>€320</td></tr><tr><td>D8</td><td>€210</td></tr><tr><td>D9</td><td>€130</td></tr><tr><td>D10</td><td>€60</td></tr></tbody></table></details></div>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="impact">
+  <div class="wrap">
+    <p class="kicker"><span class="n">5</span>Impact</p>
+    <h2>What changed</h2>
+    <p class="sub">Reported results, and how the way the business worked changed.</p>
+    <div class="impact">
+      <div class="icard"><div class="m">4×</div><div class="l">average customer spend</div><div class="d">Value insight steered marketing toward the right customers.</div></div><div class="icard"><div class="m">$8M</div><div class="l">marketing cost savings</div><div class="d">With customer retention improving alongside.</div></div><div class="icard"><div class="m">5 years</div><div class="l">of forward view</div><div class="d">From looking back 24 months to looking ahead five years per customer.</div></div><div class="icard"><div class="m">Monthly</div><div class="l">re-scoring</div><div class="d">Every customer&#39;s value and churn risk tracked over time.</div></div>
+    </div>
+    <div class="ba">
+      <div class="ba-row"><span></span><span>Before</span><span></span><span>After</span></div>
+      
+      <div class="ba-row"><span class="k">View of value</span><span class="b">Past spend only</span><span class="ar">→</span><span class="a">Past margin + 5-year predicted margin</span></div>
+      
+      <div class="ba-row"><span class="k">Churn</span><span class="b">Noticed after the customer left</span><span class="ar">→</span><span class="a">Predicted per customer, month by month</span></div>
+      
+      <div class="ba-row"><span class="k">Customers treated as</span><span class="b">One population</span><span class="ar">→</span><span class="a">Eight segments, each with its own model</span></div>
+      
+      <div class="ba-row"><span class="k">Time value</span><span class="b">Ignored</span><span class="ar">→</span><span class="a">Inflation-adjusted and discounted to today</span></div>
+      
+    </div>
+    <p class="closing">From “what did this customer spend?” to “what is this customer worth, and how is that changing?”</p>
+  </div>
+</section>
+
+<div class="more">
+  <div class="wrap">
+    <div><h2>Want the full story?</h2><p>The written case study covers the constraints, a worked example and the trade-offs.</p></div>
+    <div class="btns">
+      <a class="btn primary" href="story.html">Read the case study</a>
+      <a class="btn" href="technical.html">Technical deep dive</a>
+      <a class="btn" href="https://agnidas31.github.io/Agnivesh-Das/#work">Back to portfolio</a>
+    </div>
+  </div>
 </div>
 <div class="foot">
   <div class="wrap">
     <span>Agnivesh Das · <a href="https://agnidas31.github.io/Agnivesh-Das/">Portfolio</a> · <a href="https://www.linkedin.com/in/agnivesh-das/">LinkedIn</a></span>
-    <span>Illustrative figures; confidential details omitted.</span>
+    <span>Illustrative figures throughout; confidential details omitted.</span>
   </div>
 </div>
+<script>
+  (function () {
+    var bar = document.getElementById('progress');
+    addEventListener('scroll', function () {
+      var h = document.documentElement; bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+    }, { passive: true });
+    var tip = document.getElementById('tip');
+    function show(el) {
+      tip.textContent = el.getAttribute('data-tip');
+      var r = el.getBoundingClientRect(), w = tip.offsetWidth;
+      var x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8);
+      var y = r.top - tip.offsetHeight - 8; if (y < 8) y = r.bottom + 8;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px'; tip.style.opacity = 1;
+    }
+    function hide() { tip.style.opacity = 0; }
+    document.querySelectorAll('[data-tip]').forEach(function (el) {
+      el.addEventListener('mouseenter', function () { show(el); });
+      el.addEventListener('focus', function () { show(el); });
+      el.addEventListener('click', function () { show(el); });
+      el.addEventListener('mouseleave', hide); el.addEventListener('blur', hide);
+    });
+    addEventListener('scroll', hide, { passive: true });
+  })();
+</script>
 </body>
 </html>
